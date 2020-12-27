@@ -127,25 +127,45 @@ wrapper include:
   await db.clear()
   ```
 
-- A test utility for testing SQL queries, which ignores whitespace differences
+- Jest matchers for testing SQL queries, which ignores whitespace differences
 
   ```ts
   const query = sql`
       INSERT INTO song (name)
       VALUES (${song1})
   `
-  expect(query).toEqual(
-    sqlMatches({
+
+  expect(query).toMatchSql({
       text: 'INSERT INTO song (name) VALUES ($1)',
       values: [song1],
-    }),
+  })
+
+  const db = new Database(...)
+  const querySpy = jest.spyOn(db, 'query')
+  await db.insertAll('song', { name: song1 })
+  expect(querySpy).toHaveBeenCalledWith(
+      expect.sqlMatching({
+          text: 'INSERT INTO "song" ("name") VALUES ($1)',
+          values: [song1],
+      })
   )
+  ```
+
+  To use these, add the following code to your
+  [tests setup file](https://jestjs.io/docs/en/configuration.html#setupfilesafterenv-array):
+
+  ```js
+  // with ES6 imports
+  import 'pg-toolbox/testutils/extend-expect'
+
+  // with require
+  require('pg-toolbox/testutils/extend-expect')
   ```
 
 ## Build
 
 ```bash
-yarn pg-toolbox build
+yarn build
 ```
 
 ## Tests
@@ -153,7 +173,7 @@ yarn pg-toolbox build
 ### Run unit tests
 
 ```bash
-yarn pg-toolbox test
+yarn test
 ```
 
 ### Run end-to-end tests
@@ -168,4 +188,4 @@ yarn pg-toolbox test
        postgres:12
    ```
 
-1. `yarn pg-toolbox test:e2e`
+1. `yarn test:e2e`
