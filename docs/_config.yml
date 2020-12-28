@@ -2,7 +2,7 @@ title: pg-fusion
 description: A library providing a single unified interface to quickly setup a PostgreSQL-backed app
 
 markdown: kramdown
-theme: jekyll-theme-cayman
+remote_theme: pages-themes/cayman
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
