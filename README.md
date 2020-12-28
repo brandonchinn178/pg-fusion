@@ -69,13 +69,21 @@ test('getSongs', () => {
 })
 ```
 
-## Build
+## Contributing
+
+### Build
 
 ```bash
 yarn build
 ```
 
-## Tests
+### Lint
+
+```bash
+yarn lint .
+```
+
+If you have [pre-commit](https://pre-commit.com) installed, run `pre-commit install` to run linting and other checks before committing.
 
 ### Run unit tests
 
