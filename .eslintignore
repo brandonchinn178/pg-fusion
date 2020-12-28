@@ -1,0 +1,7 @@
+# https://github.com/eslint/eslint/issues/12348
+!.eslintrc.js
+
+**/node_modules/
+**/dist/
+**/coverage/
+.yarn/

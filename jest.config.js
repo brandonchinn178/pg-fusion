@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 const jest = require('ts-jest/utils')
 
 const tsconfig = require('./tsconfig')
