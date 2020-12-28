@@ -1,4 +1,4 @@
-# pg-toolbox
+# pg-fusion
 
 This package provides a wrapper around `pg.Pool` to provide a nicer, more
 comprehensive interface to a Postgres database. Features provided in this
@@ -7,7 +7,7 @@ wrapper include:
 - Initialization and clean up as easy as using `pg.Pool` directly
 
   ```ts
-  import { Database } from 'pg-toolbox'
+  import { Database } from 'pg-fusion'
 
   const db = new Database(/* normal pg.Pool options */)
 
@@ -28,7 +28,7 @@ wrapper include:
 - A SQL query builder that automatically parametrizes values
 
   ```ts
-  import { sql } from 'pg-toolbox'
+  import { sql } from 'pg-fusion'
 
   /**
    * Equivalent to:
@@ -156,10 +156,10 @@ wrapper include:
 
   ```js
   // with ES6 imports
-  import 'pg-toolbox/testutils/extend-expect'
+  import 'pg-fusion/testutils/extend-expect'
 
   // with require
-  require('pg-toolbox/testutils/extend-expect')
+  require('pg-fusion/testutils/extend-expect')
   ```
 
 ## Build
@@ -183,8 +183,8 @@ yarn test
    ```bash
    docker run -d -p 5432:5432 \
        -e POSTGRES_HOST_AUTH_METHOD=trust \
-       -e POSTGRES_DB=pg_toolbox_test \
-       --name pg-toolbox-test \
+       -e POSTGRES_DB=pg_fusion_test \
+       --name pg-fusion-test \
        postgres:12
    ```
 

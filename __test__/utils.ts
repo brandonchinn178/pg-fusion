@@ -2,7 +2,7 @@ import { Database, sql } from '~/index'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
-const TEST_DB = 'pg_toolbox_test'
+const TEST_DB = 'pg_fusion_test'
 
 export const setupTestDatabase = (): Database => {
   const db = new Database({ database: TEST_DB })
