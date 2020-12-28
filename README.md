@@ -1,166 +1,69 @@
 # pg-fusion
 
-This package provides a wrapper around `pg.Pool` to provide a nicer, more
-comprehensive interface to a Postgres database. Features provided in this
-wrapper include:
+This package combines the features of multiple libraries into a single unified interface to get your PostgreSQL-backed application up and running quickly. Especially useful for projects that do not want to use ORMs, for whatever reason. This library provides an interface that roughly combines the interfaces of the following libraries:
 
-- Initialization and clean up as easy as using `pg.Pool` directly
+* `pg` and `pg-pool`
+* `node-pg-migrate`
+* `squid`
+* `database-cleaner`
 
-  ```ts
-  import { Database } from 'pg-fusion'
+Features include:
 
+* Automatic pool/client/transaction management
+* A SQL query builder that automatically parametrizes values
+* Integrated migration runner (backed by `node-pg-migrate`)
+* Test helpers for clearing databases and unit testing SQL queries
+
+## Usage
+
+```ts
+import { Database, sql } from 'pg-fusion'
+
+async function getSongs(db: Database) {
+  // Will be parametrized, to prevent SQL injection attacks
+  const name = 'Take On Me'
+
+  const songs = await db.query(sql`
+    SELECT * FROM song
+    WHERE song.name = ${name}
+  `)
+
+  return songs
+}
+
+async function run() {
   const db = new Database(/* normal pg.Pool options */)
 
-  // Use database
+  const songs = await getSongs(db)
+  console.log(songs)
 
   await db.close()
-  ```
+}
+```
 
-- A helper for getting, using, and releasing a client
+```ts
+import 'pg-fusion/testutils/extend-expect'
 
-  ```ts
-  db.withClient(async (client) => {
-      const rows = await client.query(...)
-      return rows.map(...)
-  })
-  ```
-
-- A SQL query builder that automatically parametrizes values
-
-  ```ts
-  import { sql } from 'pg-fusion'
-
-  /**
-   * Equivalent to:
-   *
-   * {
-   *   text: 'SELECT * FROM song WHERE song.name = $1',
-   *   values: [songName],
-   * }
-   */
-  const query = sql`
-      SELECT * FROM song WHERE song.name = ${songName}
-  `
-  ```
-
-- Helpers for querying and executing queries
-
-  ```ts
-  await db.withClient(async (client) => {
-    const songs = await client.query(sql`SELECT * FROM song`)
-
-    // errors if 0 or more than 1 row comes back
-    const numSongs = await client.queryOne(sql`SELECT COUNT(*) FROM song`)
-
-    // executes in a single transaction
-    await client.executeAll([
-      sql`INSERT INTO song (name) VALUES (${song1})`,
-      sql`INSERT INTO song (name) VALUES (${song2})`,
-    ])
-  })
-
-  // All client methods are proxied through Database
-  const songs = await db.query(sql`SELECT * FROM song`)
-  ```
-
-- A helper for running queries in a single transaction
-
-  ```ts
-  await db.withClient(async (client) => {
-    await client.transaction(() => {
-      await client.query(sql`INSERT INTO song (name) VALUES (${song1})`)
-
-      return client.query(sql`SELECT * FROM song`)
-    })
-  })
-
-  // Equivalent to above
-  await db.transaction(async (client) => {
-    await client.query(sql`INSERT INTO song (name) VALUES (${song1})`)
-
-    return client.query(sql`SELECT * FROM song`)
-  })
-  ```
-
-- A helper for inserting records into a table
-
-  ```ts
-  await db.withClient(async (client) => {
-    await client.insertAll('song', [{ name: song1 }, { name: song2 }])
-  })
-
-  // Equivalent to above
-  await db.insertAll('song', [{ name: song1 }, { name: song2 }])
-  ```
-
-- A helper for running migrations with `node-pg-migrate`
-
-  See https://salsita.github.io/node-pg-migrate/#/api for available options.
-  This function will automatically provide the following defaults (mirroring
-  the CLI):
-
-  - `migrationsTable`: `'pgmigrations'`
-  - `dir`: `'migrations'`
-  - `direction`: `'up'`
-  - `count`: `Infinity`
-
-  You may also set `loadFromArgs: true` to set `direction` and `count`
-  according to command line arguments, similar to the CLI interface.
-
-  ```ts
-  await db.withClient(async (client) => {
-    await client.migrate()
-  })
-
-  // Equivalent to above
-  await db.migrate()
-  ```
-
-- A test helper for clearing all tables
-
-  ```ts
-  await db.withClient(async (client) => {
-    await client.clear()
-  })
-
-  // Equivalent to above
-  await db.clear()
-  ```
-
-- Jest matchers for testing SQL queries, which ignores whitespace differences
-
-  ```ts
-  const query = sql`
-      INSERT INTO song (name)
-      VALUES (${song1})
-  `
-
-  expect(query).toMatchSql({
-      text: 'INSERT INTO song (name) VALUES ($1)',
-      values: [song1],
-  })
-
+test('getSongs', () => {
   const db = new Database(...)
   const querySpy = jest.spyOn(db, 'query')
-  await db.insertAll('song', { name: song1 })
+  await getSongs(db)
+
   expect(querySpy).toHaveBeenCalledWith(
-      expect.sqlMatching({
-          text: 'INSERT INTO "song" ("name") VALUES ($1)',
-          values: [song1],
-      })
+    expect.sqlMatching({
+      // Ignores whitespace differences
+      text: 'SELECT * FROM song WHERE song.name = $1',
+      values: ['Take On Me'],
+    })
   )
-  ```
 
-  To use these, add the following code to your
-  [tests setup file](https://jestjs.io/docs/en/configuration.html#setupfilesafterenv-array):
-
-  ```js
-  // with ES6 imports
-  import 'pg-fusion/testutils/extend-expect'
-
-  // with require
-  require('pg-fusion/testutils/extend-expect')
-  ```
+  // Equivalently
+  expect(querySpy.mock.calls[0][0]).toMatchSql({
+    text: 'SELECT * FROM song WHERE song.name = $1',
+    values: ['Take On Me'],
+  })
+})
+```
 
 ## Build
 
