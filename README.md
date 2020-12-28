@@ -1,5 +1,9 @@
 # pg-fusion
 
+[![npm](https://img.shields.io/npm/v/pg-fusion)](https://npmjs.com/package/pg-fusion)
+[![Codecov](https://img.shields.io/codecov/c/github/brandonchinn178/pg-fusion)](https://codecov.io/gh/brandonchinn178/pg-fusion)
+[![CircleCI](https://img.shields.io/circleci/build/github/brandonchinn178/pg-fusion/main)](https://app.circleci.com/pipelines/github/brandonchinn178/pg-fusion)
+
 This package combines the features of multiple libraries into a single unified interface to get your PostgreSQL-backed application up and running quickly. Especially useful for projects that do not want to use ORMs, for whatever reason. This library provides an interface that roughly combines the interfaces of the following libraries:
 
 * `pg` and `pg-pool`
