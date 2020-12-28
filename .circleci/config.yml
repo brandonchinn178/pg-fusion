@@ -1,0 +1,61 @@
+version: 2.1
+
+aliases:
+  - &yarn_cache_key v1-yarn-{{ checksum "yarn.lock" }}
+  - &ci_executor
+    working_directory: ~/pg_fusion/
+    shell: /bin/bash -eux -o pipefail
+  - &docker_node_image circleci/node:12.8.1-stretch
+
+orbs:
+  codecov: codecov/codecov@1.0.2
+
+executors:
+  docker_node:
+    <<: *ci_executor
+    docker:
+      - image: *docker_node_image
+
+  docker_node_postgres:
+    <<: *ci_executor
+    docker:
+      - image: *docker_node_image
+      - image: circleci/postgres:9.6-alpine
+        environment:
+          POSTGRES_DB: pg_fusion_test
+    environment:
+      PGUSER: postgres
+      PGDATABASE: pg_fusion_test
+
+jobs:
+  build_and_test:
+    executor: docker_node_postgres
+
+    steps:
+      - checkout
+      - restore_cache:
+          key: *yarn_cache_key
+      - run:
+          name: Install external dependencies
+          command: yarn install --immutable
+      - save_cache:
+          key: *yarn_cache_key
+          paths:
+            - .yarn/cache/
+      - run: yarn typecheck
+      - run: yarn lint .
+      - run: yarn build
+      - run: yarn test --coverage
+      - codecov/upload:
+          file: coverage/lcov.info
+
+      - run: yarn test:e2e --coverage
+      - codecov/upload:
+          file: coverage/lcov.info
+
+workflows:
+  version: 2
+
+  build_and_test:
+    jobs:
+      - build_and_test
