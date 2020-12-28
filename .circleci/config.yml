@@ -1,7 +1,6 @@
 version: 2.1
 
 aliases:
-  - &yarn_cache_key v1-yarn-{{ checksum "yarn.lock" }}
   - &ci_executor
     working_directory: ~/worship_mate/
     shell: /bin/bash -eux -o pipefail
@@ -27,23 +26,27 @@ executors:
       PGUSER: postgres
       PGDATABASE: pg_fusion_test
 
+commands:
+  install_yarn_deps:
+    steps:
+      - restore_cache:
+          key: v1-yarn-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install external dependencies
+          command: yarn install --immutable
+      - save_cache:
+          key: v1-yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - .yarn/cache/
+
 jobs:
   build_and_test:
     executor: docker_node_postgres
 
     steps:
       - checkout
-      - restore_cache:
-          key: *yarn_cache_key
-      - run:
-          name: Install external dependencies
-          command: yarn install --immutable
-      - save_cache:
-          key: *yarn_cache_key
-          paths:
-            - .yarn/cache/
+      - install_yarn_deps
       - run: yarn typecheck
-      - run: yarn lint .
       - run: yarn build
       - run: yarn test --coverage
       - codecov/upload:
@@ -53,9 +56,23 @@ jobs:
       - codecov/upload:
           file: coverage/lcov.info
 
+  lint:
+    executor: docker_node
+
+    steps:
+      - checkout
+      - install_yarn_deps
+      - run:
+          name: Install pre-commit
+          command: curl https://pre-commit.com/install-local.py | python -
+      - run:
+          name: Run pre-commit
+          command: pre-commit run --all-files
+
 workflows:
   version: 2
 
   build_and_test:
     jobs:
       - build_and_test
+      - lint
