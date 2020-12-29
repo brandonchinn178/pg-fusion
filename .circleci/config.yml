@@ -58,21 +58,39 @@ jobs:
           paths:
             - dist/
 
-      - run: yarn test --coverage
-      - codecov/upload:
-          file: coverage/lcov.info
-      - run: yarn test:e2e --coverage
-      - codecov/upload:
-          file: coverage/lcov.info
-
       - run:
-          name: Bundle package
+          name: yarn pack
           command: |
             mkdir -p .ci
             yarn pack -o .ci/%s-%v.tgz
       - store_artifacts:
           path: .ci/
           destination: .
+
+      - run:
+          name: Sanity check for files that should exist
+          command: |
+            tar tf .ci/pg-fusion-*.tgz > .ci/pack-files.txt
+
+            FILES=(
+              package.json
+              LICENSE
+              dist/index.js
+              dist/index.d.ts
+              testutils/extend-expect.js
+              testutils/extend-expect.d.ts
+            )
+
+            for FILE in "${FILES[@]}"; do
+              grep -q "^package/${FILE}$" .ci/pack-files.txt
+            done
+
+      - run: yarn test --coverage
+      - codecov/upload:
+          file: coverage/lcov.info
+      - run: yarn test:e2e --coverage
+      - codecov/upload:
+          file: coverage/lcov.info
 
   lint:
     executor: docker_node
@@ -120,23 +138,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - run:
-          name: Sanity check for files that should exist
-          command: |
-            mkdir -p .ci
-            yarn pack --dry-run | awk '{ print $3 }' | tee .ci/pack-files.txt
-
-            FILES=(
-              dist/index.js
-              dist/index.d.ts
-              testutils/extend-expect.js
-              testutils/extend-expect.d.ts
-              package.json
-              LICENSE
-            )
-            for FILE in "${FILES[@]}"; do
-              grep -q "^${FILE}$" .ci/pack-files.txt
-            done
       - run:
           name: Set NPM token
           command: yarn config set npmAuthToken "${NPM_TOKEN}"
