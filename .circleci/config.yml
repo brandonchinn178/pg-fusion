@@ -110,6 +110,17 @@ jobs:
       - store_artifacts:
           path: docs/jekyll-docs.tar.gz
 
+  deploy:
+    executor: docker_node
+    steps:
+      - checkout
+      - run:
+          name: Set NPM token
+          command: yarn config set npmAuthToken "${NPM_TOKEN}"
+      - run:
+          name: Publish package
+          command: yarn npm publish --tolerate-republish
+
 workflows:
   version: 2
   build_and_test:
@@ -117,3 +128,11 @@ workflows:
       - build_and_test
       - lint
       - docs
+      - deploy:
+          filters:
+            branches:
+              only: main
+          requires:
+            - build_and_test
+            - lint
+            - docs
