@@ -6,10 +6,10 @@
 
 This package combines the features of multiple libraries into a single unified interface to get your PostgreSQL-backed application up and running quickly. Especially useful for projects that do not want to use ORMs, for whatever reason. This library provides an interface that roughly combines the interfaces of the following libraries:
 
-* `pg` and `pg-pool`
-* `node-pg-migrate`
-* `squid`
-* `database-cleaner`
+* [`pg`](https://node-postgres.com/)
+* [`node-pg-migrate`](https://salsita.github.io/node-pg-migrate/#/)
+* [`squid`](https://github.com/andywer/squid)
+* [`database-cleaner`](https://github.com/emerleite/node-database-cleaner)
 
 Features include:
 
@@ -69,13 +69,21 @@ test('getSongs', () => {
 })
 ```
 
-## Build
+## Contributing
+
+### Build
 
 ```bash
 yarn build
 ```
 
-## Tests
+### Lint
+
+```bash
+yarn lint .
+```
+
+If you have [pre-commit](https://pre-commit.com) installed, run `pre-commit install` to run linting and other checks before committing.
 
 ### Run unit tests
 
