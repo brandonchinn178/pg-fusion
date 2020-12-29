@@ -28,7 +28,7 @@ export type DatabaseConfig = pg.PoolConfig
  * Usage:
  *
  *   db = new Database(<normal pg.Pool options>)
- *   const rows = db.query(sql`SELECT * FROM song`)
+ *   const rows = await db.query(sql`SELECT * FROM song`)
  */
 export class Database {
   private pool: pg.Pool
