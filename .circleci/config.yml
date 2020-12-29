@@ -59,7 +59,7 @@ jobs:
             - dist/
 
       - run:
-          name: Bundle package
+          name: yarn pack
           command: |
             mkdir -p .ci
             yarn pack -o .ci/%s-%v.tgz
