@@ -1,6 +1,6 @@
 {
   "name": "pg-fusion",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Single interface for entire PostgreSQL workflow",
   "keywords": [
     "postgres",
