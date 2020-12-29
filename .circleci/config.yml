@@ -53,6 +53,10 @@ jobs:
 
       - run: yarn typecheck
       - run: yarn build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist/
 
       - run: yarn test --coverage
       - codecov/upload:
@@ -114,6 +118,8 @@ jobs:
     executor: docker_node
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Set NPM token
           command: yarn config set npmAuthToken "${NPM_TOKEN}"
