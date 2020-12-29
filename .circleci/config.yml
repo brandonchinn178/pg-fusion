@@ -61,6 +61,15 @@ jobs:
       - codecov/upload:
           file: coverage/lcov.info
 
+      - run:
+          name: Bundle package
+          command: |
+            mkdir -p .ci
+            yarn pack -o .ci/%s-%v.tgz
+      - store_artifacts:
+          path: .ci/
+          destination: .
+
   lint:
     executor: docker_node
     steps:
