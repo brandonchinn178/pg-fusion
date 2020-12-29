@@ -120,9 +120,16 @@ export class DatabaseClient {
   /**
    * Run migrations using node-pg-migrate.
    *
-   * See https://salsita.github.io/node-pg-migrate/#/api for available options.
-   * This function will automatically provide the following defaults (mirroring
-   * the CLI):
+   * Accepts same options as node-pg-migrate, except instead of
+   *
+   *   direction: 'up' | 'down'
+   *
+   * accepts
+   *
+   *   action: 'up' | 'down' | 'redo'
+   *
+   * to match the CLI option. Also automatically provides the following defaults
+   * to mirror CLI defaults:
    *   - migrationsTable: 'pgmigrations'
    *   - dir: 'migrations'
    *   - direction: 'up'
