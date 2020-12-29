@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.0.3
+
+Move `expect` back into `dependencies`.
+
 # 0.0.2
 
 Fixed bug in deployment.
