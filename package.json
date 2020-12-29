@@ -2,7 +2,12 @@
   "name": "pg-fusion",
   "version": "0.0.2",
   "description": "Single interface for entire PostgreSQL workflow",
-  "keywords": ["postgres", "database", "sql", "migrations"],
+  "keywords": [
+    "postgres",
+    "database",
+    "sql",
+    "migrations"
+  ],
   "homepage": "https://brandonchinn178.github.io/pg-fusion",
   "bugs": "https://github.com/brandonchinn178/pg-fusion/issues",
   "license": "MIT",
