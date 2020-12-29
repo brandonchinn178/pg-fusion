@@ -96,11 +96,7 @@ yarn test
 1. Run a Postgres server in Docker
 
    ```bash
-   docker run -d -p 5432:5432 \
-       -e POSTGRES_HOST_AUTH_METHOD=trust \
-       -e POSTGRES_DB=pg_fusion_test \
-       --name pg-fusion-test \
-       postgres:12
+   docker-compose up -d
    ```
 
 1. `yarn test:e2e`
