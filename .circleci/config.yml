@@ -58,13 +58,6 @@ jobs:
           paths:
             - dist/
 
-      - run: yarn test --coverage
-      - codecov/upload:
-          file: coverage/lcov.info
-      - run: yarn test:e2e --coverage
-      - codecov/upload:
-          file: coverage/lcov.info
-
       - run:
           name: Bundle package
           command: |
@@ -91,6 +84,13 @@ jobs:
             for FILE in "${FILES[@]}"; do
               grep -q "^${FILE}$" .ci/pack-files.txt
             done
+
+      - run: yarn test --coverage
+      - codecov/upload:
+          file: coverage/lcov.info
+      - run: yarn test:e2e --coverage
+      - codecov/upload:
+          file: coverage/lcov.info
 
   lint:
     executor: docker_node
