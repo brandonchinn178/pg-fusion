@@ -82,7 +82,7 @@ jobs:
             )
 
             for FILE in "${FILES[@]}"; do
-              grep -q "^${FILE}$" .ci/pack-files.txt
+              grep -q "^package/${FILE}$" .ci/pack-files.txt
             done
 
       - run: yarn test --coverage
