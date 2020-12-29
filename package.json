@@ -7,6 +7,10 @@
   "bugs": "https://github.com/brandonchinn178/pg-fusion/issues",
   "license": "MIT",
   "author": "Brandon Chinn <brandonchinn178@gmail.com>",
+  "files": [
+    "dist",
+    "testutils"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "github:brandonchinn178/pg-fusion",
