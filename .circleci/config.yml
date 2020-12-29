@@ -35,12 +35,12 @@ commands:
   install_yarn_deps:
     steps:
       - restore_cache:
-          key: v1-yarn-{{ checksum "yarn.lock" }}
+          key: v2-yarn-{{ checksum "yarn.lock" }}
       - run:
           name: Install external dependencies
           command: yarn install --immutable
       - save_cache:
-          key: v1-yarn-{{ checksum "yarn.lock" }}
+          key: v2-yarn-{{ checksum "yarn.lock" }}
           paths:
             - .yarn/cache/
 
