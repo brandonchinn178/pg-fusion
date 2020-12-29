@@ -42,23 +42,22 @@ commands:
 jobs:
   build_and_test:
     executor: docker_node_postgres
-
     steps:
       - checkout
       - install_yarn_deps
+
       - run: yarn typecheck
       - run: yarn build
+
       - run: yarn test --coverage
       - codecov/upload:
           file: coverage/lcov.info
-
       - run: yarn test:e2e --coverage
       - codecov/upload:
           file: coverage/lcov.info
 
   lint:
     executor: docker_node
-
     steps:
       - checkout
       - install_yarn_deps
@@ -71,7 +70,6 @@ jobs:
 
 workflows:
   version: 2
-
   build_and_test:
     jobs:
       - build_and_test
