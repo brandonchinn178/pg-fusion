@@ -121,6 +121,23 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Sanity check for files that should exist
+          command: |
+            mkdir -p .ci
+            yarn pack --dry-run | awk '{ print $3 }' | tee .ci/pack-files.txt
+
+            FILES=(
+              dist/index.js
+              dist/index.d.ts
+              testutils/extend-expect.js
+              testutils/extend-expect.d.ts
+              package.json
+              LICENSE
+            )
+            for FILE in "${FILES[@]}"; do
+              grep -q "^${FILE}$" .ci/pack-files.txt
+            done
+      - run:
           name: Set NPM token
           command: yarn config set npmAuthToken "${NPM_TOKEN}"
       - run:
