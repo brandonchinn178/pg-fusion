@@ -277,7 +277,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 
   Accepts the same options as the [`node-pg-migrate` programmatic API](https://salsita.github.io/node-pg-migrate/#/api), with the following exceptions, in order to match the CLI:
 
-  * Instead of `direction: 'up' | 'down'`, accepts `action: 'up' | 'down' | 'redo'`
+  * Instead of `direction: 'up' | 'down'`, accepts `action: 'up' | 'down' | 'redo'`, which defaults to `'up'`
   * `migrationsTable` defaults to `'pgmigrations'`
   * `dir` defaults to `'migrations'`
   * `count` defaults to `Infinity`
