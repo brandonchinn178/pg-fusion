@@ -1,0 +1,8 @@
+services:
+  test_db:
+    image: postgres:12
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: pg_fusion_test
+    ports:
+      - '${PGPORT:-5432}:5432'
