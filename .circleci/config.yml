@@ -26,6 +26,11 @@ executors:
       PGUSER: postgres
       PGDATABASE: pg_fusion_test
 
+  docker_ruby:
+    <<: *ci_executor
+    docker:
+      - image: circleci/ruby:2.7.1
+
 commands:
   install_yarn_deps:
     steps:
@@ -68,9 +73,38 @@ jobs:
           name: Run pre-commit
           command: pre-commit run --all-files
 
+  docs:
+    executor: docker_ruby
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: v1-rubygems-{{ checksum "docs/Gemfile.lock" }}
+      - run:
+          command: bundle config set path vendor/bundle
+          working_directory: docs/
+      - run:
+          command: bundle install
+          working_directory: docs/
+      - save_cache:
+          key: v1-rubygems-{{ checksum "docs/Gemfile.lock" }}
+          paths:
+            - docs/vendor/bundle
+
+      - run:
+          command: bundle exec jekyll build
+          working_directory: docs/
+      - run:
+          name: Bundle built site
+          command: tar czf jekyll-docs.tar.gz _site
+          working_directory: docs/
+      - store_artifacts:
+          path: docs/jekyll-docs.tar.gz
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build_and_test
       - lint
+      - docs
