@@ -265,13 +265,15 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   * `onConflict`: What to do in event of inserting duplicate rows. By default, throws an error. This option may also be set to:
     * The string `'ignore'`, which is an alias for `{ action: 'ignore' }`
     * An object with:
-      * `action`: either `'ignore'` or `'update'`, where `ignore` means to ignore duplicate rows and `update` means to replace the existing row with the record being inserted. If `update` is specified, either `column` or `constraint` MUST be specified.
+      * `action`: either `'ignore'` or `'update'`:
+          * `ignore` means to ignore duplicate rows. If a duplicate row was ignored, `.insert()` returns `null`.
+          * `update` means to replace the existing row with the record being inserted. If `update` is specified, either `column` or `constraint` MUST be specified.
       * `column`: The column with a `UNIQUE` constraint to check for conflicts. Cannot be specified with `constraint`.
       * `constraint`: The name of the constraint to check for conflicts. Cannot be specified with `column`.
 
 * `client.insertAll<T>(table: string, records: T[], options?: InsertOptions): Promise<void>`
 
-  Insert the given records into the given table. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
+  Insert the given records into the given table, throwing away the result. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
 
   ```ts
   await client.insertAll('my_table', [
