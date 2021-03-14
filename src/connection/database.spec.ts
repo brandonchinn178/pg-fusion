@@ -199,6 +199,33 @@ describe('Database', () => {
     })
   })
 
+  describe('.insert()', () => {
+    it('proxies to DatabaseClient', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.string(),
+          fc.anything(),
+          fc.anything(),
+          fc.anything(),
+          async (table, record, options, result) => {
+            const client = { insert: jest.fn().mockResolvedValue(result) }
+
+            const db = mkDatabaseWithMockedClient(client)
+            await expect(
+              db.insert(
+                table,
+                record as Record<string, unknown>,
+                options as InsertOptions,
+              ),
+            ).resolves.toBe(result)
+
+            expect(client.insert).toHaveBeenCalledWith(table, record, options)
+          },
+        ),
+      )
+    })
+  })
+
   describe('.insertAll()', () => {
     it('proxies to DatabaseClient', async () => {
       await fc.assert(
