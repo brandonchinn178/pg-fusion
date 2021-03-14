@@ -113,11 +113,13 @@ Features include:
 
   ```ts
   await db.withClient(async (client) => {
-    await client.insertAll('song', [{ name: song1 }, { name: song2 }])
+    await client.insert('song', { name: song1 })
+    await client.insertAll('song', [{ name: song2 }, { name: song3 }])
   })
 
   // Equivalent to above
-  await db.insertAll('song', [{ name: song1 }, { name: song2 }])
+  await db.insert('song', { name: song1 })
+  await db.insertAll('song', [{ name: song2 }, { name: song3 }])
   ```
 
 ## Test helpers
@@ -138,7 +140,7 @@ Features include:
   ```ts
   const db = new Database(...)
   const querySpy = jest.spyOn(db, 'query')
-  await db.insertAll('song', { name: song1 })
+  await db.insert('song', { name: song1 })
 
   expect(querySpy).toHaveBeenCalledWith(
     expect.sqlMatching({
@@ -247,6 +249,26 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 
   Execute all the given queries in a single transaction.
 
+* `client.insert<T>(table: string, record: Partial<T>, options?: InsertOptions): Promise<T | null>`
+
+  Insert the given record into the given table. Returns the inserted row, with default values populated:
+
+  ```ts
+  await client.insert('my_table', { foo: 'hello', bar: 1 })
+
+  // runs:
+  //   INSERT INTO my_table (foo, bar) VALUES ($1, $2) RETURNING * -- ['hello', 1]
+  ```
+
+  `insert` also accepts the following options:
+
+  * `onConflict`: What to do in event of inserting duplicate rows. By default, throws an error. This option may also be set to:
+    * The string `'ignore'`, which is an alias for `{ action: 'ignore' }`
+    * An object with:
+      * `action`: either `'ignore'` or `'update'`, where `ignore` means to ignore duplicate rows and `update` means to replace the existing row with the record being inserted. If `update` is specified, either `column` or `constraint` MUST be specified.
+      * `column`: The column with a `UNIQUE` constraint to check for conflicts. Cannot be specified with `constraint`.
+      * `constraint`: The name of the constraint to check for conflicts. Cannot be specified with `column`.
+
 * `client.insertAll<T>(table: string, records: T[], options?: InsertOptions): Promise<void>`
 
   Insert the given records into the given table. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
@@ -262,14 +284,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   //   INSERT INTO my_table (foo, bar, baz) VALUES ($1, $2, $3) -- ['world', 0, 'a']
   ```
 
-  `insertAll` also accepts the following options:
-
-  * `onConflict`: What to do in event of inserting duplicate rows. By default, throws an error. This option may also be set to:
-    * The string `'ignore'`, which is an alias for `{ action: 'ignore' }`
-    * An object with:
-      * `action`: either `'ignore'` or `'update'`, where `ignore` means to ignore duplicate rows and `update` means to replace the existing row with the record being inserted. If `update` is specified, either `column` or `constraint` MUST be specified.
-      * `column`: The column with a `UNIQUE` constraint to check for conflicts. Cannot be specified with `constraint`.
-      * `constraint`: The name of the constraint to check for conflicts. Cannot be specified with `column`.
+  Accepts the same options as `client.insert`.
 
 * `client.migrate(options?: MigrateOptions): Promise<void>`
 
@@ -453,7 +468,7 @@ In general, database functions should be tested with integration tests that actu
 
   ```ts
   const querySpy = jest.spyOn(db, 'query')
-  await db.insertAll('song', { name: song1 })
+  await db.insert('song', { name: song1 })
 
   expect(querySpy).toHaveBeenCalledWith(
     expect.sqlMatching({
