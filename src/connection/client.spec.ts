@@ -207,6 +207,7 @@ describe('DatabaseClient', () => {
           text: `
             INSERT INTO "song" ("name","artist","rating")
             VALUES ($1,$2,$3)
+            RETURNING *
           `,
           values: ['Take On Me', 'A-ha', 5],
         }),
@@ -214,6 +215,7 @@ describe('DatabaseClient', () => {
           text: `
             INSERT INTO "song" ("name","artist")
             VALUES ($1,$2)
+            RETURNING *
           `,
           values: ['Separate Ways', 'Journey'],
         }),
@@ -241,19 +243,19 @@ describe('DatabaseClient', () => {
       expect(mockQuery).toHaveBeenCalledWith(expect.sqlMatching('BEGIN'))
       expect(mockQuery).toHaveBeenCalledWith(
         expect.sqlMatching({
-          text: `INSERT INTO "song" ("name") VALUES ($1)`,
+          text: `INSERT INTO "song" ("name") VALUES ($1) RETURNING *`,
           values: ['Take On Me'],
         }),
       )
       expect(mockQuery).toHaveBeenCalledWith(
         expect.sqlMatching({
-          text: `INSERT INTO "song" ("name") VALUES ($1)`,
+          text: `INSERT INTO "song" ("name") VALUES ($1) RETURNING *`,
           values: ['UNKNOWN'],
         }),
       )
       expect(mockQuery).not.toHaveBeenCalledWith(
         expect.sqlMatching({
-          text: `INSERT INTO "song" ("name") VALUES ($1)`,
+          text: `INSERT INTO "song" ("name") VALUES ($1) RETURNING *`,
           values: ['Separate Ways'],
         }),
       )

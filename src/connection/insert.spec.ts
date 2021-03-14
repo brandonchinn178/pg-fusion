@@ -16,6 +16,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","artist","rating")
           VALUES ($1,$2,$3)
+          RETURNING *
         `,
         values: ['Take On Me', 'A-ha', 5],
       }),
@@ -23,6 +24,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","artist")
           VALUES ($1,$2)
+          RETURNING *
         `,
         values: ['Separate Ways', 'Journey'],
       }),
@@ -45,6 +47,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
           ON CONFLICT DO NOTHING
+          RETURNING *
         `,
         values: ['Take On Me', 5],
       }),
@@ -71,6 +74,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
           ON CONFLICT ("name") DO NOTHING
+          RETURNING *
         `,
         values: ['Take On Me', 5],
       }),
@@ -89,6 +93,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
           ON CONFLICT ON CONSTRAINT "unique_name" DO NOTHING
+          RETURNING *
         `,
         values: ['Take On Me', 5],
       }),
@@ -107,6 +112,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
           ON CONFLICT ("name") DO UPDATE SET ("name","rating") = ($3,$4)
+          RETURNING *
         `,
         values: ['Take On Me', 5, 'Take On Me', 5],
       }),
@@ -125,6 +131,7 @@ describe('mkInsertQuery', () => {
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
           ON CONFLICT ON CONSTRAINT "unique_name" DO UPDATE SET ("name","rating") = ($3,$4)
+          RETURNING *
         `,
         values: ['Take On Me', 5, 'Take On Me', 5],
       }),

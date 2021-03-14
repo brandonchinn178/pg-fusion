@@ -23,6 +23,7 @@ export const mkInsertQuery = <T extends Record<string, unknown>>(
     INSERT INTO ${sql.quote(table)} (${columnNamesSql})
     VALUES (${valuesSql})
     ${conflictClause}
+    RETURNING *
   `
 }
 
