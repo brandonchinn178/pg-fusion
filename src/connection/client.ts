@@ -2,7 +2,7 @@ import migrate from 'node-pg-migrate'
 import * as pg from 'pg'
 
 import { sql, SqlQuery } from '../sql'
-import { InsertOptions, mkInsertQueries } from './insert'
+import { InsertOptions, mkInsertQuery } from './insert'
 import { MigrateOptions } from './migrate'
 
 export type SqlRecord = Record<string, unknown>
@@ -99,6 +99,30 @@ export class DatabaseClient {
   }
 
   /**
+   * Insert the given entity and return the full row inserted.
+   *
+   * Usage:
+   *
+   *   // contains any defaulted column filled in, e.g. 'id'
+   *   const insertedSong = await client.insert('song', {
+   *     name: 'Take On Me',
+   *     artist: 'A-ha',
+   *   })
+   */
+  async insert<T extends SqlRecord>(
+    table: string,
+    record: Partial<T>,
+    options?: InsertOptions,
+  ): Promise<T | null> {
+    const query = mkInsertQuery(table, record, options)
+    const rows = await this.query<T>(query)
+    if (rows.length > 1) {
+      throw new Error(`INSERT statement returned multiple rows: ${rows}`)
+    }
+    return rows.length === 1 ? rows[0] : null
+  }
+
+  /**
    * Insert all of the given entities in a single transaction.
    *
    * Usage:
@@ -113,7 +137,9 @@ export class DatabaseClient {
     records: T[],
     options?: InsertOptions,
   ): Promise<void> {
-    const queries = mkInsertQueries(table, records, options)
+    const queries = records.map((record) =>
+      mkInsertQuery(table, record, options),
+    )
     await this.executeAll(queries)
   }
 

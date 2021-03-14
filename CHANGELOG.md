@@ -1,5 +1,10 @@
 # Unreleased
 
+# 0.0.4
+
+Add `db.insert()` and `client.insert()`, which inserts a single record and
+returns the inserted row.
+
 # 0.0.3
 
 Move `expect` back into `dependencies`.
