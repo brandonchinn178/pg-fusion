@@ -14,8 +14,10 @@ const initTestTable = async () => {
       VALUES ('foo'), ('bar'), ('baz');
 
       CREATE TABLE "person" (
+        "id" SERIAL NOT NULL PRIMARY KEY,
         "name" VARCHAR NOT NULL UNIQUE,
-        "age" INTEGER
+        "age" INTEGER,
+        "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `)
   })
@@ -142,6 +144,218 @@ describe('Database', () => {
     })
   })
 
+  describe('.insert()', () => {
+    beforeEach(initTestTable)
+
+    it('can insert a record, returning the inserted row with default columns populated', async () => {
+      const result = {
+        id: expect.any(Number),
+        name: 'Alice',
+        age: null,
+        created_at: expect.any(Date),
+      }
+
+      await expect(db.insert('person', { name: 'Alice' })).resolves.toEqual(
+        result,
+      )
+
+      await expect(db.query(sql`SELECT * FROM "person"`)).resolves.toEqual([
+        result,
+      ])
+    })
+
+    describe('inserting duplicates', () => {
+      it('errors without onConflict specified', async () => {
+        await db.insert('person', { name: 'Alice' })
+
+        await expect(
+          db.insert('person', { name: 'Alice', age: 20 }),
+        ).rejects.toThrow()
+      })
+
+      it('errors with onConflict=null', async () => {
+        await db.insert('person', { name: 'Alice' })
+
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: null,
+            },
+          ),
+        ).rejects.toThrow()
+      })
+
+      it('noops with onConflict=ignore', async () => {
+        await db.insert('person', { name: 'Alice' })
+        await db.insert(
+          'person',
+          { name: 'Alice', age: 20 },
+          {
+            onConflict: 'ignore',
+          },
+        )
+
+        await expect(
+          db.query(sql`SELECT "name", "age" FROM "person"`),
+        ).resolves.toMatchObject([{ name: 'Alice', age: null }])
+      })
+
+      it('noops with onConflict=ignore using column', async () => {
+        await db.insert('person', { name: 'Alice' })
+        await db.insert(
+          'person',
+          { name: 'Alice', age: 20 },
+          {
+            onConflict: {
+              action: 'ignore',
+              column: 'name',
+            },
+          },
+        )
+
+        await expect(
+          db.query(sql`SELECT "name", "age" FROM "person"`),
+        ).resolves.toMatchObject([{ name: 'Alice', age: null }])
+      })
+
+      it('noops with onConflict=ignore using constraint', async () => {
+        await db.insert('person', { name: 'Alice' })
+        await db.insert(
+          'person',
+          { name: 'Alice', age: 20 },
+          {
+            onConflict: {
+              action: 'ignore',
+              constraint: 'person_name_key',
+            },
+          },
+        )
+
+        await expect(
+          db.query(sql`SELECT "name", "age" FROM "person"`),
+        ).resolves.toMatchObject([{ name: 'Alice', age: null }])
+      })
+
+      it('errors with onConflict=ignore using another column', async () => {
+        await db.query(
+          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
+        )
+
+        await db.insert('person', { name: 'Alice' })
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: {
+                action: 'ignore',
+                column: 'age',
+              },
+            },
+          ),
+        ).rejects.toThrow()
+      })
+
+      it('errors with onConflict=ignore using another constraint', async () => {
+        await db.query(
+          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
+        )
+
+        await db.insert('person', { name: 'Alice' })
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: {
+                action: 'ignore',
+                constraint: 'unique_age',
+              },
+            },
+          ),
+        ).rejects.toThrow()
+      })
+
+      it('updates duplicates with onConflict=update using column', async () => {
+        await db.insert('person', { name: 'Alice' })
+        await db.insert(
+          'person',
+          { name: 'Alice', age: 20 },
+          {
+            onConflict: {
+              action: 'update',
+              column: 'name',
+            },
+          },
+        )
+
+        await expect(
+          db.query(sql`SELECT "name", "age" FROM "person"`),
+        ).resolves.toMatchObject([{ name: 'Alice', age: 20 }])
+      })
+
+      it('updates duplicates with onConflict=update using constraint', async () => {
+        await db.insert('person', { name: 'Alice' })
+        await db.insert(
+          'person',
+          { name: 'Alice', age: 20 },
+          {
+            onConflict: {
+              action: 'update',
+              constraint: 'person_name_key',
+            },
+          },
+        )
+
+        await expect(
+          db.query(sql`SELECT "name", "age" FROM "person"`),
+        ).resolves.toMatchObject([{ name: 'Alice', age: 20 }])
+      })
+
+      it('errors with onConflict=update using another column', async () => {
+        await db.query(
+          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
+        )
+
+        await db.insert('person', { name: 'Alice' })
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: {
+                action: 'update',
+                column: 'age',
+              },
+            },
+          ),
+        ).rejects.toThrow()
+      })
+
+      it('errors with onConflict=update using another constraint', async () => {
+        await db.query(
+          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
+        )
+
+        await db.insert('person', { name: 'Alice' })
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: {
+                action: 'update',
+                constraint: 'unique_age',
+              },
+            },
+          ),
+        ).rejects.toThrow()
+      })
+    })
+  })
+
   describe('.insertAll()', () => {
     beforeEach(initTestTable)
 
@@ -176,157 +390,6 @@ describe('Database', () => {
       const rows = await db.query(sql`SELECT "col1" FROM "test_table"`)
       expect(rows).not.toContainEqual({ col1: val1 })
       expect(rows).not.toContainEqual({ col1: val2 })
-    })
-
-    describe('inserting duplicates', () => {
-      it('errors without onConflict specified', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-
-        await expect(
-          db.insertAll('person', [{ name: 'Alice', age: 20 }]),
-        ).rejects.toThrow()
-      })
-
-      it('errors with onConflict=null', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-
-        await expect(
-          db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-            onConflict: null,
-          }),
-        ).rejects.toThrow()
-      })
-
-      it('noops with onConflict=ignore', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-          onConflict: 'ignore',
-        })
-
-        await expect(
-          db.query(sql`SELECT "name", "age" FROM "person"`),
-        ).resolves.toMatchObject([{ name: 'Alice', age: null }])
-      })
-
-      it('noops with onConflict=ignore using column', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-          onConflict: {
-            action: 'ignore',
-            column: 'name',
-          },
-        })
-
-        await expect(
-          db.query(sql`SELECT "name", "age" FROM "person"`),
-        ).resolves.toMatchObject([{ name: 'Alice', age: null }])
-      })
-
-      it('noops with onConflict=ignore using constraint', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-          onConflict: {
-            action: 'ignore',
-            constraint: 'person_name_key',
-          },
-        })
-
-        await expect(
-          db.query(sql`SELECT "name", "age" FROM "person"`),
-        ).resolves.toMatchObject([{ name: 'Alice', age: null }])
-      })
-
-      it('errors with onConflict=ignore using another column', async () => {
-        await db.query(
-          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
-        )
-
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await expect(
-          db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-            onConflict: {
-              action: 'ignore',
-              column: 'age',
-            },
-          }),
-        ).rejects.toThrow()
-      })
-
-      it('errors with onConflict=ignore using another constraint', async () => {
-        await db.query(
-          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
-        )
-
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await expect(
-          db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-            onConflict: {
-              action: 'ignore',
-              constraint: 'unique_age',
-            },
-          }),
-        ).rejects.toThrow()
-      })
-
-      it('updates duplicates with onConflict=update using column', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-          onConflict: {
-            action: 'update',
-            column: 'name',
-          },
-        })
-
-        await expect(
-          db.query(sql`SELECT "name", "age" FROM "person"`),
-        ).resolves.toMatchObject([{ name: 'Alice', age: 20 }])
-      })
-
-      it('updates duplicates with onConflict=update using constraint', async () => {
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-          onConflict: {
-            action: 'update',
-            constraint: 'person_name_key',
-          },
-        })
-
-        await expect(
-          db.query(sql`SELECT "name", "age" FROM "person"`),
-        ).resolves.toMatchObject([{ name: 'Alice', age: 20 }])
-      })
-
-      it('errors with onConflict=update using another column', async () => {
-        await db.query(
-          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
-        )
-
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await expect(
-          db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-            onConflict: {
-              action: 'update',
-              column: 'age',
-            },
-          }),
-        ).rejects.toThrow()
-      })
-
-      it('errors with onConflict=update using another constraint', async () => {
-        await db.query(
-          sql`ALTER TABLE person ADD CONSTRAINT unique_age UNIQUE (age)`,
-        )
-
-        await db.insertAll('person', [{ name: 'Alice' }])
-        await expect(
-          db.insertAll('person', [{ name: 'Alice', age: 20 }], {
-            onConflict: {
-              action: 'update',
-              constraint: 'unique_age',
-            },
-          }),
-        ).rejects.toThrow()
-      })
     })
   })
 
