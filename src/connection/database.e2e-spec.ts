@@ -187,15 +187,18 @@ describe('Database', () => {
         ).rejects.toThrow()
       })
 
-      it('noops with onConflict=ignore', async () => {
+      it('noops with onConflict=ignore, returning null', async () => {
         await db.insert('person', { name: 'Alice' })
-        await db.insert(
-          'person',
-          { name: 'Alice', age: 20 },
-          {
-            onConflict: 'ignore',
-          },
-        )
+
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: 'ignore',
+            },
+          ),
+        ).resolves.toBeNull()
 
         await expect(
           db.query(sql`SELECT "name", "age" FROM "person"`),
@@ -280,16 +283,19 @@ describe('Database', () => {
 
       it('updates duplicates with onConflict=update using column', async () => {
         await db.insert('person', { name: 'Alice' })
-        await db.insert(
-          'person',
-          { name: 'Alice', age: 20 },
-          {
-            onConflict: {
-              action: 'update',
-              column: 'name',
+
+        await expect(
+          db.insert(
+            'person',
+            { name: 'Alice', age: 20 },
+            {
+              onConflict: {
+                action: 'update',
+                column: 'name',
+              },
             },
-          },
-        )
+          ),
+        ).resolves.toMatchObject({ name: 'Alice', age: 20 })
 
         await expect(
           db.query(sql`SELECT "name", "age" FROM "person"`),
