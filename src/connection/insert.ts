@@ -4,32 +4,26 @@ export type InsertOptions = {
   onConflict?: ConflictOptions | null
 }
 
-export const mkInsertQueries = <T extends Record<string, unknown>>(
+export const mkInsertQuery = <T extends Record<string, unknown>>(
   table: string,
-  records: T[],
+  record: T,
   options: InsertOptions = {},
 ) => {
   const { onConflict = null } = options
 
-  return records.map((record) => {
-    const columnNames = Object.keys(record)
-    const values = columnNames.map((columnName) => record[columnName])
+  const columnNames = Object.keys(record)
+  const values = columnNames.map((columnName) => record[columnName])
 
-    const columnNamesSql = sql.join(columnNames.map(sql.quote), ',')
-    const valuesSql = sql.join(values.map(sql.param), ',')
+  const columnNamesSql = sql.join(columnNames.map(sql.quote), ',')
+  const valuesSql = sql.join(values.map(sql.param), ',')
 
-    const conflictClause = mkConflictClause(
-      columnNamesSql,
-      valuesSql,
-      onConflict,
-    )
+  const conflictClause = mkConflictClause(columnNamesSql, valuesSql, onConflict)
 
-    return sql`
-      INSERT INTO ${sql.quote(table)} (${columnNamesSql})
-      VALUES (${valuesSql})
-      ${conflictClause}
-    `
-  })
+  return sql`
+    INSERT INTO ${sql.quote(table)} (${columnNamesSql})
+    VALUES (${valuesSql})
+    ${conflictClause}
+  `
 }
 
 type ConflictTarget = { column: string } | { constraint: string }

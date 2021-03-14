@@ -1,17 +1,17 @@
 import { extendExpect } from '~test-utils'
 
-import { mkInsertQueries } from './insert'
+import { mkInsertQuery } from './insert'
 
 extendExpect()
 
-describe('mkInsertQueries', () => {
-  it('works for multiple records', async () => {
+describe('mkInsertQuery', () => {
+  it('returns the correct INSERT statement', async () => {
     const songs = [
       { name: 'Take On Me', artist: 'A-ha', rating: 5 },
       { name: 'Separate Ways', artist: 'Journey' },
     ]
 
-    expect(mkInsertQueries('song', songs)).toEqual([
+    expect(songs.map((song) => mkInsertQuery('song', song))).toEqual([
       expect.sqlMatching({
         text: `
           INSERT INTO "song" ("name","artist","rating")
@@ -30,17 +30,17 @@ describe('mkInsertQueries', () => {
   })
 
   it('defaults to onConflict=null', async () => {
-    const songs = [{ name: 'Take On Me' }]
+    const song = { name: 'Take On Me' }
 
-    expect(mkInsertQueries('song', songs)).toEqualJSON(
-      mkInsertQueries('song', songs, { onConflict: null }),
+    expect(mkInsertQuery('song', song)).toEqualJSON(
+      mkInsertQuery('song', song, { onConflict: null }),
     )
   })
 
   it('implements onConflict=ignore', async () => {
-    const songs = [{ name: 'Take On Me', rating: 5 }]
+    const song = { name: 'Take On Me', rating: 5 }
 
-    expect(mkInsertQueries('song', songs, { onConflict: 'ignore' })).toEqual([
+    expect(mkInsertQuery('song', song, { onConflict: 'ignore' })).toEqual(
       expect.sqlMatching({
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
@@ -48,27 +48,25 @@ describe('mkInsertQueries', () => {
         `,
         values: ['Take On Me', 5],
       }),
-    ])
+    )
   })
 
   test('onConflict=ignore is equivalent to onConflict={ action: ignore }', async () => {
-    const songs = [{ name: 'Take On Me', rating: 5 }]
+    const song = { name: 'Take On Me', rating: 5 }
 
-    expect(
-      mkInsertQueries('song', songs, { onConflict: 'ignore' }),
-    ).toEqualJSON(
-      mkInsertQueries('song', songs, { onConflict: { action: 'ignore' } }),
+    expect(mkInsertQuery('song', song, { onConflict: 'ignore' })).toEqualJSON(
+      mkInsertQuery('song', song, { onConflict: { action: 'ignore' } }),
     )
   })
 
   it('implements onConflict=ignore with column', async () => {
-    const songs = [{ name: 'Take On Me', rating: 5 }]
+    const song = { name: 'Take On Me', rating: 5 }
 
     expect(
-      mkInsertQueries('song', songs, {
+      mkInsertQuery('song', song, {
         onConflict: { action: 'ignore', column: 'name' },
       }),
-    ).toEqual([
+    ).toEqual(
       expect.sqlMatching({
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
@@ -76,17 +74,17 @@ describe('mkInsertQueries', () => {
         `,
         values: ['Take On Me', 5],
       }),
-    ])
+    )
   })
 
   it('implements onConflict=ignore with constraint', async () => {
-    const songs = [{ name: 'Take On Me', rating: 5 }]
+    const song = { name: 'Take On Me', rating: 5 }
 
     expect(
-      mkInsertQueries('song', songs, {
+      mkInsertQuery('song', song, {
         onConflict: { action: 'ignore', constraint: 'unique_name' },
       }),
-    ).toEqual([
+    ).toEqual(
       expect.sqlMatching({
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
@@ -94,17 +92,17 @@ describe('mkInsertQueries', () => {
         `,
         values: ['Take On Me', 5],
       }),
-    ])
+    )
   })
 
   it('implements onConflict=update with column', async () => {
-    const songs = [{ name: 'Take On Me', rating: 5 }]
+    const song = { name: 'Take On Me', rating: 5 }
 
     expect(
-      mkInsertQueries('song', songs, {
+      mkInsertQuery('song', song, {
         onConflict: { action: 'update', column: 'name' },
       }),
-    ).toEqual([
+    ).toEqual(
       expect.sqlMatching({
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
@@ -112,17 +110,17 @@ describe('mkInsertQueries', () => {
         `,
         values: ['Take On Me', 5, 'Take On Me', 5],
       }),
-    ])
+    )
   })
 
   it('implements onConflict=update with constraint', async () => {
-    const songs = [{ name: 'Take On Me', rating: 5 }]
+    const song = { name: 'Take On Me', rating: 5 }
 
     expect(
-      mkInsertQueries('song', songs, {
+      mkInsertQuery('song', song, {
         onConflict: { action: 'update', constraint: 'unique_name' },
       }),
-    ).toEqual([
+    ).toEqual(
       expect.sqlMatching({
         text: `
           INSERT INTO "song" ("name","rating") VALUES ($1,$2)
@@ -130,6 +128,6 @@ describe('mkInsertQueries', () => {
         `,
         values: ['Take On Me', 5, 'Take On Me', 5],
       }),
-    ])
+    )
   })
 })
