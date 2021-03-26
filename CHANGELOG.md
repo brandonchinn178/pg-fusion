@@ -1,5 +1,7 @@
 # Unreleased
 
+Break up `db.insert()` and `client.insert()` into `.insert()` and `.insertWith()`, where `.insert()` no longer takes any options and returns `Promise<T>` and `insertWith` requires options and returns `Promise<T | null>`.
+
 # 0.0.4
 
 Add `db.insert()` and `client.insert()`, which inserts a single record and
