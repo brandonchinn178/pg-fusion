@@ -249,7 +249,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 
   Execute all the given queries in a single transaction.
 
-* `client.insert<T>(table: string, record: Partial<T>, options?: InsertOptions): Promise<T | null>`
+* `client.insert<T>(table: string, record: Partial<T>): Promise<T>`
 
   Insert the given record into the given table. Returns the inserted row, with default values populated:
 
@@ -260,9 +260,11 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   //   INSERT INTO my_table (foo, bar) VALUES ($1, $2) RETURNING * -- ['hello', 1]
   ```
 
-  `insert` also accepts the following options:
+* `client.insertWith<T>(table: string, record: Partial<T>, options: InsertOptions): Promise<T | null>`
 
-  * `onConflict`: What to do in event of inserting duplicate rows. By default, throws an error. This option may also be set to:
+  Same as `client.insert()` except allows passing in the following options:
+
+  * `onConflict`: What to do in event of inserting duplicate rows. When not specified, throws an error. This option may also be set to:
     * The string `'ignore'`, which is an alias for `{ action: 'ignore' }`
     * An object with:
       * `action`: either `'ignore'` or `'update'`:

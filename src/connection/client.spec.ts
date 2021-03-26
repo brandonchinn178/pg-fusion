@@ -214,11 +214,11 @@ describe('DatabaseClient', () => {
       )
     })
 
-    it('returns null if no rows come back', async () => {
+    it('errors if no rows come back', async () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([])
 
-      await expect(client.insert('song', song)).resolves.toBeNull()
+      await expect(client.insert('song', song)).rejects.toThrow()
     })
 
     it('errors if multiple rows come back', async () => {
@@ -226,6 +226,44 @@ describe('DatabaseClient', () => {
       jest.spyOn(client, 'query').mockResolvedValue([{}, {}])
 
       await expect(client.insert('song', song)).rejects.toThrow()
+    })
+  })
+
+  describe('.insertWith()', () => {
+    const song = { name: 'Take On Me', artist: 'A-ha', rating: 5 }
+
+    it('inserts the given record', async () => {
+      const newSong = { id: 1, ...song }
+
+      const { client } = mkClient()
+      jest.spyOn(client, 'query').mockResolvedValue([newSong])
+
+      await expect(client.insertWith('song', song, {})).resolves.toBe(newSong)
+
+      expect(client.query).toHaveBeenCalledWith(
+        expect.sqlMatching({
+          text: `
+            INSERT INTO "song" ("name","artist","rating")
+            VALUES ($1,$2,$3)
+            RETURNING *
+          `,
+          values: ['Take On Me', 'A-ha', 5],
+        }),
+      )
+    })
+
+    it('returns null if no rows come back', async () => {
+      const { client } = mkClient()
+      jest.spyOn(client, 'query').mockResolvedValue([])
+
+      await expect(client.insertWith('song', song, {})).resolves.toBeNull()
+    })
+
+    it('errors if multiple rows come back', async () => {
+      const { client } = mkClient()
+      jest.spyOn(client, 'query').mockResolvedValue([{}, {}])
+
+      await expect(client.insertWith('song', song, {})).rejects.toThrow()
     })
   })
 
