@@ -206,20 +206,46 @@ describe('Database', () => {
           fc.string(),
           fc.anything(),
           fc.anything(),
-          fc.anything(),
-          async (table, record, options, result) => {
+          async (table, record, result) => {
             const client = { insert: jest.fn().mockResolvedValue(result) }
 
             const db = mkDatabaseWithMockedClient(client)
             await expect(
-              db.insert(
+              db.insert(table, record as Record<string, unknown>),
+            ).resolves.toBe(result)
+
+            expect(client.insert).toHaveBeenCalledWith(table, record)
+          },
+        ),
+      )
+    })
+  })
+
+  describe('.insertWith()', () => {
+    it('proxies to DatabaseClient', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.string(),
+          fc.anything(),
+          fc.anything(),
+          fc.anything(),
+          async (table, record, options, result) => {
+            const client = { insertWith: jest.fn().mockResolvedValue(result) }
+
+            const db = mkDatabaseWithMockedClient(client)
+            await expect(
+              db.insertWith(
                 table,
                 record as Record<string, unknown>,
                 options as InsertOptions,
               ),
             ).resolves.toBe(result)
 
-            expect(client.insert).toHaveBeenCalledWith(table, record, options)
+            expect(client.insertWith).toHaveBeenCalledWith(
+              table,
+              record,
+              options,
+            )
           },
         ),
       )
