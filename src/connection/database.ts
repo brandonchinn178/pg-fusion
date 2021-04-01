@@ -81,6 +81,10 @@ export class Database {
     })
   }
 
+  async execute(query: SqlQuery): Promise<void> {
+    return this.withClient((client) => client.execute(query))
+  }
+
   async executeAll(queries: SqlQuery[]): Promise<void> {
     return this.withClient((client) => client.executeAll(queries))
   }
