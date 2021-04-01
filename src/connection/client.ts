@@ -77,6 +77,17 @@ export class DatabaseClient {
   }
 
   /**
+   * Execute the given query.
+   *
+   * Usage:
+   *
+   *   await client.execute(sql`UPDATE "song" SET name=${name} WHERE id=${id}`)
+   */
+  async execute(query: SqlQuery): Promise<void> {
+    await this.executeAll([query])
+  }
+
+  /**
    * Run all the given queries in a single transaction.
    *
    * Usage:

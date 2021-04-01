@@ -109,6 +109,21 @@ describe('Database', () => {
     })
   })
 
+  describe('.execute()', () => {
+    beforeEach(initTestTable)
+
+    it('can execute a single query', async () => {
+      const val = 'asdf'
+
+      await db.execute(sql`
+        UPDATE "test_table" SET col1=${val} WHERE col1='foo'
+      `)
+
+      const rows = await db.query(sql`SELECT "col1" FROM "test_table"`)
+      expect(rows).toContainEqual({ col1: val })
+    })
+  })
+
   describe('.executeAll()', () => {
     beforeEach(initTestTable)
 

@@ -178,6 +178,25 @@ describe('Database', () => {
     })
   })
 
+  describe('.execute()', () => {
+    it('proxies to DatabaseClient', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.anything(),
+          fc.anything(),
+          async (query, result) => {
+            const client = { execute: jest.fn().mockResolvedValue(result) }
+
+            const db = mkDatabaseWithMockedClient(client)
+            await expect(db.execute(query as SqlQuery)).resolves.toBe(result)
+
+            expect(client.execute).toHaveBeenCalledWith(query)
+          },
+        ),
+      )
+    })
+  })
+
   describe('.executeAll()', () => {
     it('proxies to DatabaseClient', async () => {
       await fc.assert(

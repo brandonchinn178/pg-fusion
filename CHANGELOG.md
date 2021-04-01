@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.1.1
+
+Add single `db.execute()` and `client.execute()` functions, which are equivalent to calling `.executeAll()` with a single-element array.
+
 # 0.1.0
 
 Break up `db.insert()` and `client.insert()` into `.insert()` and `.insertWith()`, where `.insert()` no longer takes any options and returns `Promise<T>` and `insertWith` requires options and returns `Promise<T | null>`.

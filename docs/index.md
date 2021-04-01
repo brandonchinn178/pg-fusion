@@ -79,7 +79,10 @@ Features include:
     // errors if 0 or more than 1 row comes back
     const numSongs = await client.queryOne(sql`SELECT COUNT(*) FROM song`)
 
-    // executes in a single transaction
+    // execute a query
+    await client.execute(sql`UPDATE song SET name=${name} WHERE id=${id}`)
+
+    // execute multiple queries in a single transaction
     await client.executeAll([
       sql`INSERT INTO song (name) VALUES (${song1})`,
       sql`INSERT INTO song (name) VALUES (${song2})`,
@@ -244,6 +247,10 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 * `client.transaction<T>(callback: () => Promise<T>): Promise<T>`
 
   Run the given `callback` within a transaction. If an error is thrown in the callback (i.e. the promise was rejected), the transaction is rolled back. Otherwise, it's committed. PostgreSQL does support transactions-in-transactions, so you can nest `client.transaction` if needed.
+
+* `client.execute(query: SqlQuery): Promise<void>`
+
+  Equivalent to `client.executeAll([query])`
 
 * `client.executeAll(queries: Array<SqlQuery>): Promise<void>`
 
