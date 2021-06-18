@@ -1,6 +1,7 @@
 # Unreleased
 
 * Return inserted rows in `insertAll`
+* `insertAll` accepts partial records, just like `insert`
 
 # 0.1.1
 
