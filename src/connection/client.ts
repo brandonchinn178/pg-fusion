@@ -161,11 +161,19 @@ export class DatabaseClient {
     table: string,
     records: T[],
     options?: InsertOptions,
-  ): Promise<void> {
-    const queries = records.map((record) =>
-      mkInsertQuery(table, record, options),
-    )
-    await this.executeAll(queries)
+  ): Promise<T[]> {
+    const result: T[] = []
+
+    await this.transaction(async () => {
+      for (const record of records) {
+        const row = await this.insertWith<T>(table, record, options ?? {})
+        if (row) {
+          result.push(row)
+        }
+      }
+    })
+
+    return result
   }
 
   /**

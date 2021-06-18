@@ -110,7 +110,7 @@ export class Database {
     table: string,
     records: T[],
     options?: InsertOptions,
-  ): Promise<void> {
+  ): Promise<T[]> {
     return this.withClient((client) =>
       client.insertAll<T>(table, records, options),
     )

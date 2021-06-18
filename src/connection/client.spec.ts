@@ -274,11 +274,12 @@ describe('DatabaseClient', () => {
         { name: 'Separate Ways', artist: 'Journey' },
       ]
 
-      const { client } = mkClient()
-      jest.spyOn(client, 'executeAll')
+      const { client, mockQuery } = mkClient()
+      mockQuery.mockResolvedValue({ rows: [] })
+
       await client.insertAll('song', songs)
 
-      expect(client.executeAll).toHaveBeenCalledWith([
+      expect(mockQuery).toHaveBeenCalledWith(
         expect.sqlMatching({
           text: `
             INSERT INTO "song" ("name","artist","rating")
@@ -287,6 +288,8 @@ describe('DatabaseClient', () => {
           `,
           values: ['Take On Me', 'A-ha', 5],
         }),
+      )
+      expect(mockQuery).toHaveBeenCalledWith(
         expect.sqlMatching({
           text: `
             INSERT INTO "song" ("name","artist")
@@ -295,7 +298,7 @@ describe('DatabaseClient', () => {
           `,
           values: ['Separate Ways', 'Journey'],
         }),
-      ])
+      )
     })
 
     it('rolls back if any individual query fails', async () => {
