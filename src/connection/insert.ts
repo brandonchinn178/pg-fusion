@@ -8,7 +8,7 @@ export const mkInsertQuery = <T extends Record<string, unknown>>(
   table: string,
   record: T,
   options: InsertOptions = {},
-) => {
+): SqlQuery => {
   const { onConflict = null } = options
 
   const columnNames = Object.keys(record)
@@ -38,13 +38,13 @@ const mkConflictClause = (
   columnNamesSql: SqlQuery,
   valuesSql: SqlQuery,
   options: ConflictOptions | null,
-) => {
+): SqlQuery => {
   if (options === null) {
     return sql``
   }
 
   const { action, ...target } =
-    options === 'ignore' ? { action: 'ignore' } : options
+    options === 'ignore' ? { action: 'ignore' as const } : options
 
   const targetClause =
     'constraint' in target && target.constraint
