@@ -1,6 +1,8 @@
+import * as fc from 'fast-check'
+
 import { extendExpect } from '~test-utils'
 
-import { mkInsertQuery } from './insert'
+import { InsertOptions, mkInsertQuery, toInsertResult } from './insert'
 
 extendExpect()
 
@@ -136,5 +138,48 @@ describe('mkInsertQuery', () => {
         values: ['Take On Me', 5, 'Take On Me', 5],
       }),
     )
+  })
+})
+
+describe('toInsertResult', () => {
+  it('errors with multiple rows', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.anything(), { minLength: 2 }),
+        fc.anything(),
+        (rows, options) => {
+          expect(() => toInsertResult(rows, options as InsertOptions)).toThrow()
+        },
+      ),
+    )
+  })
+
+  it('returns single row', () => {
+    fc.assert(
+      fc.property(
+        fc.anything().filter(Boolean),
+        fc.anything(),
+        (row, options) => {
+          expect(toInsertResult([row], options as InsertOptions)).toBe(row)
+        },
+      ),
+    )
+  })
+
+  it('errors with no rows without onConflict specified', () => {
+    expect(() => toInsertResult([])).toThrow()
+    expect(() => toInsertResult([], undefined)).toThrow()
+    expect(() => toInsertResult([], {})).toThrow()
+  })
+
+  it('returns null with no rows with onConflict=ignore', () => {
+    expect(toInsertResult([], { onConflict: 'ignore' })).toBeNull()
+    expect(toInsertResult([], { onConflict: { action: 'ignore' } })).toBeNull()
+  })
+
+  it('errors with no rows with onConflict=update', () => {
+    expect(() =>
+      toInsertResult([], { onConflict: { action: 'update', column: 'name' } }),
+    ).toThrow()
   })
 })

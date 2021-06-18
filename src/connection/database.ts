@@ -2,7 +2,7 @@ import * as pg from 'pg'
 
 import { SqlQuery } from '../sql'
 import { DatabaseClient, SqlRecord } from './client'
-import { InsertOptions } from './insert'
+import { InsertOptions, InsertResult } from './insert'
 import { MigrateOptions } from './migrate'
 
 // https://github.com/DefinitelyTyped/DefinitelyTyped/pull/49567
@@ -89,20 +89,16 @@ export class Database {
     return this.withClient((client) => client.executeAll(queries))
   }
 
-  async insert<T extends SqlRecord>(
+  async insert<
+    T extends SqlRecord,
+    Options extends InsertOptions = Record<string, unknown>
+  >(
     table: string,
     record: Partial<T>,
-  ): Promise<T> {
-    return this.withClient((client) => client.insert<T>(table, record))
-  }
-
-  async insertWith<T extends SqlRecord>(
-    table: string,
-    record: Partial<T>,
-    options: InsertOptions,
-  ): Promise<T | null> {
+    options?: Options,
+  ): Promise<InsertResult<T, Options>> {
     return this.withClient((client) =>
-      client.insertWith<T>(table, record, options),
+      client.insert<T, Options>(table, record, options),
     )
   }
 

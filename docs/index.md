@@ -256,7 +256,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 
   Execute all the given queries in a single transaction.
 
-* `client.insert<T>(table: string, record: Partial<T>): Promise<T>`
+* `client.insert<T, Options extends InsertOptions>(table: string, record: Partial<T>, options?: Options): Promise<InsertResult<T, Options>>`
 
   Insert the given record into the given table. Returns the inserted row, with default values populated:
 
@@ -265,24 +265,24 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 
   // runs:
   //   INSERT INTO my_table (foo, bar) VALUES ($1, $2) RETURNING * -- ['hello', 1]
+  // returns:
+  //   { id: 1, foo: 'hello', bar: 1, baz: null }
   ```
 
-* `client.insertWith<T>(table: string, record: Partial<T>, options: InsertOptions): Promise<T | null>`
-
-  Same as `client.insert()` except allows passing in the following options:
+  By default, returns the nonnullable `Promise<T>`, but this function also accepts the following options, which may change the return type:
 
   * `onConflict`: What to do in event of inserting duplicate rows. When not specified, throws an error. This option may also be set to:
     * The string `'ignore'`, which is an alias for `{ action: 'ignore' }`
     * An object with:
       * `action`: either `'ignore'` or `'update'`:
-          * `ignore` means to ignore duplicate rows. If a duplicate row was ignored, `.insert()` returns `null`.
+          * `ignore` means to ignore duplicate rows. Changes the return type to `Promise<T | null>`, returning `null` if a duplicate row was ignored.
           * `update` means to replace the existing row with the record being inserted. If `update` is specified, either `column` or `constraint` MUST be specified.
       * `column`: The column with a `UNIQUE` constraint to check for conflicts. Cannot be specified with `constraint`.
       * `constraint`: The name of the constraint to check for conflicts. Cannot be specified with `column`.
 
-* `client.insertAll<T>(table: string, records: T[], options?: InsertOptions): Promise<void>`
+* `client.insertAll<T>(table: string, records: Partial<T>[], options?: InsertOptions): Promise<T[]>`
 
-  Insert the given records into the given table, throwing away the result. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
+  Insert the given records into the given table, returning the created rows. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
 
   ```ts
   await client.insertAll('my_table', [
@@ -295,7 +295,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   //   INSERT INTO my_table (foo, bar, baz) VALUES ($1, $2, $3) -- ['world', 0, 'a']
   ```
 
-  Accepts the same options as `client.insert`.
+  Accepts the same options as `client.insert`. If specifying `onConflict=ignore`, ignored duplicate rows will **not** be included in the returned rows.
 
 * `client.migrate(options?: MigrateOptions): Promise<void>`
 
