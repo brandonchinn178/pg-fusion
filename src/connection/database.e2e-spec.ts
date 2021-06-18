@@ -5,6 +5,13 @@ import { setupTestDatabase } from '~test-utils'
 
 const db = setupTestDatabase()
 
+type Person = {
+  id: number
+  name: string
+  age: number
+  created_at: Date
+}
+
 const initTestTable = async () => {
   await db.withClient(async (client) => {
     await client.query(sql`
@@ -381,7 +388,7 @@ describe('Database', () => {
     beforeEach(initTestTable)
 
     it('can insert multiple records', async () => {
-      const result = await db.insertAll('person', [
+      const result = await db.insertAll<Person>('person', [
         { name: 'Alice', age: 20 },
         { name: 'Bob' },
         { name: 'Claire', age: 30 },
@@ -405,7 +412,7 @@ describe('Database', () => {
     it('does not return ignored duplicate rows', async () => {
       await db.insert('person', { name: 'Alice' })
 
-      const result = await db.insertAll(
+      const result = await db.insertAll<Person>(
         'person',
         [
           { name: 'Alice', age: 20 },
@@ -426,7 +433,7 @@ describe('Database', () => {
       const val2 = 'newvalue2'
 
       await expect(
-        db.insertAll('test_table', [
+        db.insertAll<Record<string, unknown>>('test_table', [
           { col1: val1 },
           { col1: 'bad', unknown_col: 'bad' },
           { col1: val2 },
