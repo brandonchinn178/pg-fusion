@@ -89,23 +89,16 @@ export class Database {
     return this.withClient((client) => client.executeAll(queries))
   }
 
-  async insert<T extends SqlRecord>(
-    table: string,
-    record: Partial<T>,
-  ): Promise<T> {
-    return this.withClient((client) => client.insert<T>(table, record))
-  }
-
-  async insertWith<
+  async insert<
     T extends SqlRecord,
     Options extends InsertOptions = Record<string, unknown>
   >(
     table: string,
     record: Partial<T>,
-    options: Options,
+    options?: Options,
   ): Promise<InsertResult<T, Options>> {
     return this.withClient((client) =>
-      client.insertWith<T, Options>(table, record, options),
+      client.insert<T, Options>(table, record, options),
     )
   }
 

@@ -192,44 +192,6 @@ describe('DatabaseClient', () => {
   })
 
   describe('.insert()', () => {
-    const song = { name: 'Take On Me', artist: 'A-ha', rating: 5 }
-
-    it('inserts the given record', async () => {
-      const newSong = { id: 1, ...song }
-
-      const { client } = mkClient()
-      jest.spyOn(client, 'query').mockResolvedValue([newSong])
-
-      await expect(client.insert('song', song)).resolves.toBe(newSong)
-
-      expect(client.query).toHaveBeenCalledWith(
-        expect.sqlMatching({
-          text: `
-            INSERT INTO "song" ("name","artist","rating")
-            VALUES ($1,$2,$3)
-            RETURNING *
-          `,
-          values: ['Take On Me', 'A-ha', 5],
-        }),
-      )
-    })
-
-    it('errors if no rows come back', async () => {
-      const { client } = mkClient()
-      jest.spyOn(client, 'query').mockResolvedValue([])
-
-      await expect(client.insert('song', song)).rejects.toThrow()
-    })
-
-    it('errors if multiple rows come back', async () => {
-      const { client } = mkClient()
-      jest.spyOn(client, 'query').mockResolvedValue([{}, {}])
-
-      await expect(client.insert('song', song)).rejects.toThrow()
-    })
-  })
-
-  describe('.insertWith()', () => {
     type Song = typeof song & { id: number }
     const song = { name: 'Take On Me', artist: 'A-ha', rating: 5 }
 
@@ -239,8 +201,8 @@ describe('DatabaseClient', () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([newSong])
 
-      // insertWith should be not nullable by default
-      const result: Song = await client.insertWith<Song>('song', song, {})
+      // insert should be not nullable by default
+      const result: Song = await client.insert<Song>('song', song)
       expect(result).toBe(newSong)
 
       expect(client.query).toHaveBeenCalledWith(
@@ -259,15 +221,15 @@ describe('DatabaseClient', () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([])
 
-      await expect(client.insertWith('song', song, {})).rejects.toThrow()
+      await expect(client.insert('song', song)).rejects.toThrow()
     })
 
     it('returns null if no rows come back with onConflict=ignore', async () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([])
 
-      // insertWith should be nullable when onConflict=ignore
-      const result: Song | null = await client.insertWith<Song>('song', song, {
+      // insert should be nullable when onConflict=ignore
+      const result: Song | null = await client.insert<Song>('song', song, {
         onConflict: 'ignore',
       })
       expect(result).toBeNull()
@@ -277,7 +239,7 @@ describe('DatabaseClient', () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([{}, {}])
 
-      await expect(client.insertWith('song', song, {})).rejects.toThrow()
+      await expect(client.insert('song', song)).rejects.toThrow()
     })
   })
 

@@ -125,27 +125,13 @@ export class DatabaseClient {
    *     artist: 'A-ha',
    *   })
    */
-  async insert<T extends SqlRecord>(
-    table: string,
-    record: Partial<T>,
-  ): Promise<T> {
-    const result = await this.insertWith(table, record, {})
-    if (result === null) {
-      throw new Error('DatabaseClient.insert() unexpectedly returned nothing')
-    }
-    return result
-  }
-
-  /**
-   * Same as 'insert', except also takes in options.
-   */
-  async insertWith<
+  async insert<
     T extends SqlRecord,
     Options extends InsertOptions = Record<string, unknown>
   >(
     table: string,
     record: Partial<T>,
-    options: Options,
+    options?: Options,
   ): Promise<InsertResult<T, Options>> {
     const query = mkInsertQuery(table, record, options)
     const rows = await this.query<T>(query)
@@ -171,11 +157,7 @@ export class DatabaseClient {
 
     await this.transaction(async () => {
       for (const record of records) {
-        const row = await this.insertWith<T, InsertOptions>(
-          table,
-          record,
-          options ?? {},
-        )
+        const row = await this.insert<T, InsertOptions>(table, record, options)
         if (row) {
           result.push(row)
         }

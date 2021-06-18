@@ -179,41 +179,20 @@ describe('Database', () => {
       ])
     })
 
-    it('errors when inserting duplicates', async () => {
-      await db.insert('person', { name: 'Alice' })
-
-      await expect(
-        db.insert('person', { name: 'Alice', age: 20 }),
-      ).rejects.toThrow()
-    })
-  })
-
-  describe('.insertWith()', () => {
-    beforeEach(initTestTable)
-
-    it('can insert a record, returning the inserted row with default columns populated', async () => {
-      const result = {
-        id: expect.any(Number),
-        name: 'Alice',
-        age: null,
-        created_at: expect.any(Date),
-      }
-
-      await expect(
-        db.insertWith('person', { name: 'Alice' }, {}),
-      ).resolves.toEqual(result)
-
-      await expect(db.query(sql`SELECT * FROM "person"`)).resolves.toEqual([
-        result,
-      ])
-    })
-
     describe('inserting duplicates', () => {
+      it('errors with no options specified', async () => {
+        await db.insert('person', { name: 'Alice' })
+
+        await expect(
+          db.insert('person', { name: 'Alice', age: 20 }),
+        ).rejects.toThrow()
+      })
+
       it('errors without onConflict specified', async () => {
         await db.insert('person', { name: 'Alice' })
 
         await expect(
-          db.insertWith('person', { name: 'Alice', age: 20 }, {}),
+          db.insert('person', { name: 'Alice', age: 20 }, {}),
         ).rejects.toThrow()
       })
 
@@ -221,13 +200,7 @@ describe('Database', () => {
         await db.insert('person', { name: 'Alice' })
 
         await expect(
-          db.insertWith(
-            'person',
-            { name: 'Alice', age: 20 },
-            {
-              onConflict: null,
-            },
-          ),
+          db.insert('person', { name: 'Alice', age: 20 }, { onConflict: null }),
         ).rejects.toThrow()
       })
 
@@ -235,12 +208,10 @@ describe('Database', () => {
         await db.insert('person', { name: 'Alice' })
 
         await expect(
-          db.insertWith(
+          db.insert(
             'person',
             { name: 'Alice', age: 20 },
-            {
-              onConflict: 'ignore',
-            },
+            { onConflict: 'ignore' },
           ),
         ).resolves.toBeNull()
 
@@ -251,7 +222,7 @@ describe('Database', () => {
 
       it('noops with onConflict=ignore using column', async () => {
         await db.insert('person', { name: 'Alice' })
-        await db.insertWith(
+        await db.insert(
           'person',
           { name: 'Alice', age: 20 },
           {
@@ -269,7 +240,7 @@ describe('Database', () => {
 
       it('noops with onConflict=ignore using constraint', async () => {
         await db.insert('person', { name: 'Alice' })
-        await db.insertWith(
+        await db.insert(
           'person',
           { name: 'Alice', age: 20 },
           {
@@ -292,7 +263,7 @@ describe('Database', () => {
 
         await db.insert('person', { name: 'Alice' })
         await expect(
-          db.insertWith(
+          db.insert(
             'person',
             { name: 'Alice', age: 20 },
             {
@@ -312,7 +283,7 @@ describe('Database', () => {
 
         await db.insert('person', { name: 'Alice' })
         await expect(
-          db.insertWith(
+          db.insert(
             'person',
             { name: 'Alice', age: 20 },
             {
@@ -329,7 +300,7 @@ describe('Database', () => {
         await db.insert('person', { name: 'Alice' })
 
         await expect(
-          db.insertWith(
+          db.insert(
             'person',
             { name: 'Alice', age: 20 },
             {
@@ -348,7 +319,7 @@ describe('Database', () => {
 
       it('updates duplicates with onConflict=update using constraint', async () => {
         await db.insert('person', { name: 'Alice' })
-        await db.insertWith(
+        await db.insert(
           'person',
           { name: 'Alice', age: 20 },
           {
@@ -371,7 +342,7 @@ describe('Database', () => {
 
         await db.insert('person', { name: 'Alice' })
         await expect(
-          db.insertWith(
+          db.insert(
             'person',
             { name: 'Alice', age: 20 },
             {
@@ -391,7 +362,7 @@ describe('Database', () => {
 
         await db.insert('person', { name: 'Alice' })
         await expect(
-          db.insertWith(
+          db.insert(
             'person',
             { name: 'Alice', age: 20 },
             {
