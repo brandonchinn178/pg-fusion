@@ -285,7 +285,13 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   Insert the given records into the given table, returning the created rows. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
 
   ```ts
-  await client.insertAll('my_table', [
+  type MyTable = {
+    foo: string
+    bar: number
+    baz: string
+  }
+
+  await client.insertAll<MyTable>('my_table', [
     { foo: 'hello', bar: 1 },
     { foo: 'world', bar: 0, baz: 'a' },
   ])
