@@ -410,10 +410,16 @@ describe('Database', () => {
     beforeEach(initTestTable)
 
     it('can insert multiple records', async () => {
-      await db.insertAll('person', [
+      const result = await db.insertAll('person', [
         { name: 'Alice', age: 20 },
         { name: 'Bob' },
         { name: 'Claire', age: 30 },
+      ])
+
+      expect(result).toMatchObject([
+        { id: expect.any(Number), name: 'Alice', age: 20 },
+        { id: expect.any(Number), name: 'Bob' },
+        { id: expect.any(Number), name: 'Claire', age: 30 },
       ])
 
       await expect(
@@ -422,6 +428,25 @@ describe('Database', () => {
         { name: 'Alice', age: 20 },
         { name: 'Bob', age: null },
         { name: 'Claire', age: 30 },
+      ])
+    })
+
+    it('does not return ignored duplicate rows', async () => {
+      await db.insert('person', { name: 'Alice' })
+
+      const result = await db.insertAll(
+        'person',
+        [
+          { name: 'Alice', age: 20 },
+          { name: 'Bob' },
+          { name: 'Claire', age: 30 },
+        ],
+        { onConflict: 'ignore' },
+      )
+
+      expect(result).toMatchObject([
+        { id: expect.any(Number), name: 'Bob' },
+        { id: expect.any(Number), name: 'Claire', age: 30 },
       ])
     })
 
