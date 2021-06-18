@@ -4,6 +4,12 @@ export type InsertOptions = {
   onConflict?: ConflictOptions | null
 }
 
+export type InsertResult<T, Options extends InsertOptions> = ConflictType<
+  Options['onConflict']
+> extends 'ignore'
+  ? T | null
+  : T
+
 export const mkInsertQuery = <T extends Record<string, unknown>>(
   table: string,
   record: T,
@@ -27,12 +33,43 @@ export const mkInsertQuery = <T extends Record<string, unknown>>(
   `
 }
 
+export const toInsertResult = <T, Options extends InsertOptions>(
+  rows: T[],
+  options?: Options,
+): InsertResult<T, Options> => {
+  if (rows.length > 1) {
+    throw new Error(
+      `INSERT statement unexpectedly returned multiple rows: ${rows}`,
+    )
+  }
+
+  const row = rows.length === 1 ? rows[0] : null
+
+  const conflictOptions = options?.onConflict
+  const isNullableResult =
+    conflictOptions &&
+    (conflictOptions === 'ignore' || conflictOptions.action === 'ignore')
+  if (!isNullableResult && row === null) {
+    throw new Error(`INSERT statement unexpectedly returned no rows`)
+  }
+
+  return row as InsertResult<T, Options>
+}
+
 type ConflictTarget = { column: string } | { constraint: string }
 
 type ConflictOptions =
   | 'ignore'
   | ({ action: 'ignore' } & Partial<ConflictTarget>)
   | ({ action: 'update' } & ConflictTarget)
+
+type ConflictType<Options> = Options extends ConflictOptions
+  ? Options extends 'ignore'
+    ? 'ignore'
+    : Options extends { action: 'ignore' }
+    ? 'ignore'
+    : 'update'
+  : null
 
 const mkConflictClause = (
   columnNamesSql: SqlQuery,
