@@ -280,9 +280,9 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
       * `column`: The column with a `UNIQUE` constraint to check for conflicts. Cannot be specified with `constraint`.
       * `constraint`: The name of the constraint to check for conflicts. Cannot be specified with `column`.
 
-* `client.insertAll<T>(table: string, records: T[], options?: InsertOptions): Promise<void>`
+* `client.insertAll<T>(table: string, records: Partial<T>[], options?: InsertOptions): Promise<T[]>`
 
-  Insert the given records into the given table, throwing away the result. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
+  Insert the given records into the given table, returning the created rows. The records may contain different columns; e.g. if the record had fields `foo` and `bar` and an optional field `baz`:
 
   ```ts
   await client.insertAll('my_table', [
@@ -295,7 +295,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   //   INSERT INTO my_table (foo, bar, baz) VALUES ($1, $2, $3) -- ['world', 0, 'a']
   ```
 
-  Accepts the same options as `client.insert`.
+  Accepts the same options as `client.insertWith`. If specifying `onConflict=ignore`, ignored duplicate rows will **not** be included in the returned rows.
 
 * `client.migrate(options?: MigrateOptions): Promise<void>`
 
