@@ -1,5 +1,7 @@
 # Unreleased
 
+# 0.2.0
+
 * Return inserted rows in `insertAll`
 * `insertAll` accepts partial records, just like `insert`
 * `insert` and `insertWith` are now combined into a single `insert` function. The function is smart enough to inspect the options and return `T | null` only if `onConflict=ignore`, and `T` otherwise.
