@@ -2,7 +2,12 @@ import migrate from 'node-pg-migrate'
 import * as pg from 'pg'
 
 import { sql, SqlQuery } from '../sql'
-import { InsertOptions, mkInsertQuery } from './insert'
+import {
+  InsertOptions,
+  InsertResult,
+  mkInsertQuery,
+  toInsertResult,
+} from './insert'
 import { MigrateOptions } from './migrate'
 
 export type SqlRecord = Record<string, unknown>
@@ -134,17 +139,17 @@ export class DatabaseClient {
   /**
    * Same as 'insert', except also takes in options.
    */
-  async insertWith<T extends SqlRecord>(
+  async insertWith<
+    T extends SqlRecord,
+    Options extends InsertOptions = Record<string, unknown>
+  >(
     table: string,
     record: Partial<T>,
-    options: InsertOptions,
-  ): Promise<T | null> {
+    options: Options,
+  ): Promise<InsertResult<T, Options>> {
     const query = mkInsertQuery(table, record, options)
     const rows = await this.query<T>(query)
-    if (rows.length > 1) {
-      throw new Error(`INSERT statement returned multiple rows: ${rows}`)
-    }
-    return rows.length === 1 ? rows[0] : null
+    return toInsertResult(rows, options)
   }
 
   /**
@@ -166,7 +171,11 @@ export class DatabaseClient {
 
     await this.transaction(async () => {
       for (const record of records) {
-        const row = await this.insertWith<T>(table, record, options ?? {})
+        const row = await this.insertWith<T, InsertOptions>(
+          table,
+          record,
+          options ?? {},
+        )
         if (row) {
           result.push(row)
         }

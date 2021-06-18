@@ -230,6 +230,7 @@ describe('DatabaseClient', () => {
   })
 
   describe('.insertWith()', () => {
+    type Song = typeof song & { id: number }
     const song = { name: 'Take On Me', artist: 'A-ha', rating: 5 }
 
     it('inserts the given record', async () => {
@@ -238,7 +239,9 @@ describe('DatabaseClient', () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([newSong])
 
-      await expect(client.insertWith('song', song, {})).resolves.toBe(newSong)
+      // insertWith should be not nullable by default
+      const result: Song = await client.insertWith<Song>('song', song, {})
+      expect(result).toBe(newSong)
 
       expect(client.query).toHaveBeenCalledWith(
         expect.sqlMatching({
@@ -252,11 +255,22 @@ describe('DatabaseClient', () => {
       )
     })
 
-    it('returns null if no rows come back', async () => {
+    it('errors if no rows come back', async () => {
       const { client } = mkClient()
       jest.spyOn(client, 'query').mockResolvedValue([])
 
-      await expect(client.insertWith('song', song, {})).resolves.toBeNull()
+      await expect(client.insertWith('song', song, {})).rejects.toThrow()
+    })
+
+    it('returns null if no rows come back with onConflict=ignore', async () => {
+      const { client } = mkClient()
+      jest.spyOn(client, 'query').mockResolvedValue([])
+
+      // insertWith should be nullable when onConflict=ignore
+      const result: Song | null = await client.insertWith<Song>('song', song, {
+        onConflict: 'ignore',
+      })
+      expect(result).toBeNull()
     })
 
     it('errors if multiple rows come back', async () => {
@@ -275,7 +289,7 @@ describe('DatabaseClient', () => {
       ]
 
       const { client, mockQuery } = mkClient()
-      mockQuery.mockResolvedValue({ rows: [] })
+      mockQuery.mockResolvedValue({ rows: [{ id: 0 }] })
 
       await client.insertAll('song', songs)
 
@@ -308,7 +322,7 @@ describe('DatabaseClient', () => {
         if (query.values[0] === 'UNKNOWN') {
           throw new Error('fail')
         }
-        return { rows: [] }
+        return { rows: [{ id: 0 }] }
       })
 
       await expect(
