@@ -30,7 +30,7 @@ Features include:
 - Initialization and clean up as easy as using `pg.Pool` directly
 
   ```ts
-  import { Database } from 'pg-toolbox'
+  import { Database } from 'pg-fusion'
 
   const db = new Database(/* normal pg.Pool options */)
 
@@ -51,7 +51,7 @@ Features include:
 - A SQL query builder that automatically parametrizes values
 
   ```ts
-  import { sql } from 'pg-toolbox'
+  import { sql } from 'pg-fusion'
 
   /**
    * When executed, will run the SQL query
@@ -167,10 +167,10 @@ Features include:
 
   ```js
   // with ES6 imports
-  import 'pg-toolbox/testutils/extend-expect'
+  import 'pg-fusion/testutils/extend-expect'
 
   // with require
-  require('pg-toolbox/testutils/extend-expect')
+  require('pg-fusion/testutils/extend-expect')
   ```
 
 ## Database migrations
@@ -314,7 +314,7 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
   // scripts/migrate.ts
   #!/usr/bin/env ts-node-script
 
-  import { Database, loadCLIMigrateArgs } from 'pg-toolbox'
+  import { Database, loadCLIMigrateArgs } from 'pg-fusion'
 
   const cliMigrateArgs = loadCLIMigrateArgs()
   const db = new Database(...)
