@@ -104,7 +104,7 @@ export class Database {
 
   async insertAll<T extends SqlRecord>(
     table: string,
-    records: T[],
+    records: Partial<T>[],
     options?: InsertOptions,
   ): Promise<T[]> {
     return this.withClient((client) =>

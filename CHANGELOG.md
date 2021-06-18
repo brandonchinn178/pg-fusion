@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.2.1
+
+Make `db.insertAll` accept partial rows, just like `client.insertAll`
+
 # 0.2.0
 
 * Return inserted rows in `insertAll`
