@@ -1,5 +1,7 @@
 # Unreleased
 
+* Return inserted rows in `insertAll`
+
 # 0.1.1
 
 Add single `db.execute()` and `client.execute()` functions, which are equivalent to calling `.executeAll()` with a single-element array.
