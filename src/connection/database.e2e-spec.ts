@@ -38,7 +38,7 @@ describe('Database', () => {
   })
 
   it('converts PostgreSQL bigint into Javascript BigInt', async () => {
-    const { val } = await db.queryOne(sql`SELECT 1::bigint AS val`)
+    const { val } = await db.querySingle(sql`SELECT 1::bigint AS val`)
     expect(val).toEqual(BigInt(1))
   })
 
@@ -58,24 +58,24 @@ describe('Database', () => {
     })
   })
 
-  describe('.queryOne()', () => {
+  describe('.querySingle()', () => {
     beforeEach(initTestTable)
 
     it('can run a query', async () => {
       await expect(
-        db.queryOne(sql`SELECT "col1" FROM "test_table" WHERE "col1" = 'foo'`),
+        db.querySingle(sql`SELECT "col1" FROM "test_table" WHERE "col1" = 'foo'`),
       ).resolves.toEqual({ col1: 'foo' })
     })
 
     it('errors if the query returns no rows', async () => {
       await expect(
-        db.queryOne(sql`SELECT * FROM "test_table" WHERE FALSE`),
+        db.querySingle(sql`SELECT * FROM "test_table" WHERE FALSE`),
       ).rejects.toThrow()
     })
 
     it('errors if the query returns multiple rows', async () => {
       await expect(
-        db.queryOne(sql`SELECT * FROM "test_table"`),
+        db.querySingle(sql`SELECT * FROM "test_table"`),
       ).rejects.toThrow()
     })
   })
@@ -502,20 +502,20 @@ describe('Database', () => {
 
       // make sure tables are populated
       await expect(
-        db.queryOne(sql`SELECT COUNT(*)::integer AS count FROM "test_table1"`),
+        db.querySingle(sql`SELECT COUNT(*)::integer AS count FROM "test_table1"`),
       ).resolves.toStrictEqual({ count: 1 })
       await expect(
-        db.queryOne(sql`SELECT COUNT(*)::integer AS count FROM "test_table2"`),
+        db.querySingle(sql`SELECT COUNT(*)::integer AS count FROM "test_table2"`),
       ).resolves.toStrictEqual({ count: 1 })
 
       await db.clear()
 
       // make sure tables are cleared
       await expect(
-        db.queryOne(sql`SELECT COUNT(*)::integer AS count FROM "test_table1"`),
+        db.querySingle(sql`SELECT COUNT(*)::integer AS count FROM "test_table1"`),
       ).resolves.toStrictEqual({ count: 0 })
       await expect(
-        db.queryOne(sql`SELECT COUNT(*)::integer AS count FROM "test_table2"`),
+        db.querySingle(sql`SELECT COUNT(*)::integer AS count FROM "test_table2"`),
       ).resolves.toStrictEqual({ count: 0 })
     })
 

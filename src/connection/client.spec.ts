@@ -48,14 +48,14 @@ describe('DatabaseClient', () => {
     })
   })
 
-  describe('.queryOne()', () => {
+  describe('.querySingle()', () => {
     it('queries one row', async () => {
       await fc.assert(
         fc.asyncProperty(fc.anything(), fc.anything(), async (query, row) => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [row] })
 
-          await expect(client.queryOne(query as SqlQuery)).resolves.toEqual(row)
+          await expect(client.querySingle(query as SqlQuery)).resolves.toEqual(row)
         }),
       )
     })
@@ -66,7 +66,7 @@ describe('DatabaseClient', () => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [] })
 
-          await expect(client.queryOne(query as SqlQuery)).rejects.toThrow()
+          await expect(client.querySingle(query as SqlQuery)).rejects.toThrow()
         }),
       )
     })
@@ -80,7 +80,7 @@ describe('DatabaseClient', () => {
             const { client, mockQuery } = mkClient()
             mockQuery.mockResolvedValue({ rows })
 
-            await expect(client.queryOne(query as SqlQuery)).rejects.toThrow()
+            await expect(client.querySingle(query as SqlQuery)).rejects.toThrow()
           },
         ),
       )

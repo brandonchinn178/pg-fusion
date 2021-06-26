@@ -140,19 +140,19 @@ describe('Database', () => {
     })
   })
 
-  describe('.queryOne()', () => {
+  describe('.querySingle()', () => {
     it('proxies to DatabaseClient', async () => {
       await fc.assert(
         fc.asyncProperty(
           fc.anything(),
           fc.anything(),
           async (query, result) => {
-            const client = { queryOne: jest.fn().mockResolvedValue(result) }
+            const client = { querySingle: jest.fn().mockResolvedValue(result) }
 
             const db = mkDatabaseWithMockedClient(client)
-            await expect(db.queryOne(query as SqlQuery)).resolves.toBe(result)
+            await expect(db.querySingle(query as SqlQuery)).resolves.toBe(result)
 
-            expect(client.queryOne).toHaveBeenCalledWith(query)
+            expect(client.querySingle).toHaveBeenCalledWith(query)
           },
         ),
       )

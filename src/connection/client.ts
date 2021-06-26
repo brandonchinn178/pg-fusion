@@ -41,11 +41,11 @@ export class DatabaseClient {
    *
    * Usage:
    *
-   *   const { count } = await client.queryOne(sql`
+   *   const { count } = await client.querySingle(sql`
    *     SELECT COUNT(*) AS count FROM "song"
    *   `)
    */
-  async queryOne<T extends SqlRecord>(query: SqlQuery): Promise<T> {
+  async querySingle<T extends SqlRecord>(query: SqlQuery): Promise<T> {
     const rows = await this.query<T>(query)
     if (rows.length !== 1) {
       throw new Error(`Expected one row, got: ${JSON.stringify(rows)}`)
