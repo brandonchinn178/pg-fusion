@@ -41,9 +41,9 @@ export class DatabaseClient {
    *
    * Usage:
    *
-   *   const { count } = await client.queryOne({
-   *     text: 'SELECT COUNT(*) AS count FROM "song"',
-   *   })
+   *   const { count } = await client.queryOne(sql`
+   *     SELECT COUNT(*) AS count FROM "song"
+   *   `)
    */
   async queryOne<T extends SqlRecord>(query: SqlQuery): Promise<T> {
     const rows = await this.query<T>(query)
