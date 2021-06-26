@@ -150,7 +150,9 @@ describe('Database', () => {
             const client = { querySingle: jest.fn().mockResolvedValue(result) }
 
             const db = mkDatabaseWithMockedClient(client)
-            await expect(db.querySingle(query as SqlQuery)).resolves.toBe(result)
+            await expect(db.querySingle(query as SqlQuery)).resolves.toBe(
+              result,
+            )
 
             expect(client.querySingle).toHaveBeenCalledWith(query)
           },

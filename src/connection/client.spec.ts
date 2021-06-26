@@ -55,7 +55,9 @@ describe('DatabaseClient', () => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [row] })
 
-          await expect(client.querySingle(query as SqlQuery)).resolves.toEqual(row)
+          await expect(client.querySingle(query as SqlQuery)).resolves.toEqual(
+            row,
+          )
         }),
       )
     })
@@ -80,7 +82,9 @@ describe('DatabaseClient', () => {
             const { client, mockQuery } = mkClient()
             mockQuery.mockResolvedValue({ rows })
 
-            await expect(client.querySingle(query as SqlQuery)).rejects.toThrow()
+            await expect(
+              client.querySingle(query as SqlQuery),
+            ).rejects.toThrow()
           },
         ),
       )
