@@ -37,6 +37,23 @@ export class DatabaseClient {
   }
 
   /**
+   * Run the given query and expect either 0 or 1 row to be returned.
+   *
+   * Usage:
+   *
+   *   const { count } = await client.queryOne(sql`
+   *     SELECT * FROM "song" WHERE id = ${id}
+   *   `)
+   */
+  async queryOne<T extends SqlRecord>(query: SqlQuery): Promise<T | null> {
+    const rows = await this.query<T>(query)
+    if (rows.length > 1) {
+      throw new Error(`Expected 0 or 1 row, got: ${JSON.stringify(rows)}`)
+    }
+    return rows[0] ?? null
+  }
+
+  /**
    * Run the given query and return the only row.
    *
    * Usage:
@@ -46,11 +63,11 @@ export class DatabaseClient {
    *   `)
    */
   async querySingle<T extends SqlRecord>(query: SqlQuery): Promise<T> {
-    const rows = await this.query<T>(query)
-    if (rows.length !== 1) {
-      throw new Error(`Expected one row, got: ${JSON.stringify(rows)}`)
+    const row = await this.queryOne<T>(query)
+    if (!row) {
+      throw new Error('Expected a row, no row was returned')
     }
-    return rows[0]
+    return row
   }
 
   /**

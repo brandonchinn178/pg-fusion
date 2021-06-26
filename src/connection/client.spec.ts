@@ -48,6 +48,45 @@ describe('DatabaseClient', () => {
     })
   })
 
+  describe('.queryOne()', () => {
+    it('queries one row', async () => {
+      await fc.assert(
+        fc.asyncProperty(fc.anything(), fc.anything(), async (query, row) => {
+          const { client, mockQuery } = mkClient()
+          mockQuery.mockResolvedValue({ rows: [row] })
+
+          await expect(client.queryOne(query as SqlQuery)).resolves.toEqual(row)
+        }),
+      )
+    })
+
+    it('returns null with no rows', async () => {
+      await fc.assert(
+        fc.asyncProperty(fc.anything(), async (query) => {
+          const { client, mockQuery } = mkClient()
+          mockQuery.mockResolvedValue({ rows: [] })
+
+          await expect(client.queryOne(query as SqlQuery)).resolves.toBeNull()
+        }),
+      )
+    })
+
+    it('errors with multiple rows', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.anything(),
+          fc.array(fc.anything(), 2, 10),
+          async (query, rows) => {
+            const { client, mockQuery } = mkClient()
+            mockQuery.mockResolvedValue({ rows })
+
+            await expect(client.queryOne(query as SqlQuery)).rejects.toThrow()
+          },
+        ),
+      )
+    })
+  })
+
   describe('.querySingle()', () => {
     it('queries one row', async () => {
       await fc.assert(

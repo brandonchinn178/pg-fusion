@@ -58,6 +58,28 @@ describe('Database', () => {
     })
   })
 
+  describe('.queryOne()', () => {
+    beforeEach(initTestTable)
+
+    it('can run a query', async () => {
+      await expect(
+        db.queryOne(sql`SELECT "col1" FROM "test_table" WHERE "col1" = 'foo'`),
+      ).resolves.toEqual({ col1: 'foo' })
+    })
+
+    it('returns null if the query returns no rows', async () => {
+      await expect(
+        db.queryOne(sql`SELECT * FROM "test_table" WHERE FALSE`),
+      ).resolves.toBeNull()
+    })
+
+    it('errors if the query returns multiple rows', async () => {
+      await expect(
+        db.queryOne(sql`SELECT * FROM "test_table"`),
+      ).rejects.toThrow()
+    })
+  })
+
   describe('.querySingle()', () => {
     beforeEach(initTestTable)
 

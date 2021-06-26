@@ -69,6 +69,10 @@ export class Database {
     return this.withClient((client) => client.query<T>(query))
   }
 
+  async queryOne<T extends SqlRecord>(query: SqlQuery): Promise<T | null> {
+    return this.withClient((client) => client.queryOne<T>(query))
+  }
+
   async querySingle<T extends SqlRecord>(query: SqlQuery): Promise<T> {
     return this.withClient((client) => client.querySingle<T>(query))
   }
