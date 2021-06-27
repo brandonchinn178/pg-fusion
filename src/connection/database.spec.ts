@@ -159,6 +159,27 @@ describe('Database', () => {
     })
   })
 
+  describe('.querySingle()', () => {
+    it('proxies to DatabaseClient', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.anything(),
+          fc.anything(),
+          async (query, result) => {
+            const client = { querySingle: jest.fn().mockResolvedValue(result) }
+
+            const db = mkDatabaseWithMockedClient(client)
+            await expect(db.querySingle(query as SqlQuery)).resolves.toBe(
+              result,
+            )
+
+            expect(client.querySingle).toHaveBeenCalledWith(query)
+          },
+        ),
+      )
+    })
+  })
+
   describe('.transaction()', () => {
     it('proxies to DatabaseClient', async () => {
       await fc.assert(

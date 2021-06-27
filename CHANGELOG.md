@@ -1,5 +1,10 @@
 # Unreleased
 
+# 0.3.0
+
+* Rename `queryOne` to `querySingle`
+* Add a new `queryOne` function that returns `null` if no rows come back
+
 # 0.2.1
 
 Make `db.insertAll` accept partial rows, just like `client.insertAll`

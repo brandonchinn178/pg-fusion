@@ -76,8 +76,10 @@ Features include:
   await db.withClient(async (client) => {
     const songs = await client.query(sql`SELECT * FROM song`)
 
+    const song = await client.queryOne(sql`SELECT * FROM song WHERE id=${id}`)
+
     // errors if 0 or more than 1 row comes back
-    const numSongs = await client.queryOne(sql`SELECT COUNT(*) FROM song`)
+    const numSongs = await client.querySingle(sql`SELECT COUNT(*) FROM song`)
 
     // execute a query
     await client.execute(sql`UPDATE song SET name=${name} WHERE id=${id}`)
@@ -240,7 +242,11 @@ A `DatabaseClient` represents a connection to a PostgreSQL database. You should 
 
   Run the given `SqlQuery` and return the results as a list of rows. Each row is returned as an object, with keys corresponding to the names of the columns in the result.
 
-* `client.queryOne<T>(query: SqlQuery): Promise<T>`
+* `client.queryOne<T>(query: SqlQuery): Promise<T | null>`
+
+  A helper that calls `client.query()` and expects 0 or 1 rows to come back, throwing an error otherwise. Useful for queries on unique columns like `WHERE id = ${id}`.
+
+* `client.querySingle<T>(query: SqlQuery): Promise<T>`
 
   A helper that calls `client.query()` and expects exactly 1 row to come back, throwing an error otherwise. Useful for aggregate queries like `COUNT(*)`.
 

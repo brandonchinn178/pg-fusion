@@ -51,7 +51,7 @@ describe('DatabaseClient', () => {
   describe('.queryOne()', () => {
     it('queries one row', async () => {
       await fc.assert(
-        fc.asyncProperty(fc.anything(), fc.anything(), async (query, row) => {
+        fc.asyncProperty(fc.anything(), fc.object(), async (query, row) => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [row] })
 
@@ -60,13 +60,13 @@ describe('DatabaseClient', () => {
       )
     })
 
-    it('errors with no rows', async () => {
+    it('returns null with no rows', async () => {
       await fc.assert(
         fc.asyncProperty(fc.anything(), async (query) => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [] })
 
-          await expect(client.queryOne(query as SqlQuery)).rejects.toThrow()
+          await expect(client.queryOne(query as SqlQuery)).resolves.toBeNull()
         }),
       )
     })
@@ -81,6 +81,49 @@ describe('DatabaseClient', () => {
             mockQuery.mockResolvedValue({ rows })
 
             await expect(client.queryOne(query as SqlQuery)).rejects.toThrow()
+          },
+        ),
+      )
+    })
+  })
+
+  describe('.querySingle()', () => {
+    it('queries one row', async () => {
+      await fc.assert(
+        fc.asyncProperty(fc.anything(), fc.object(), async (query, row) => {
+          const { client, mockQuery } = mkClient()
+          mockQuery.mockResolvedValue({ rows: [row] })
+
+          await expect(client.querySingle(query as SqlQuery)).resolves.toEqual(
+            row,
+          )
+        }),
+      )
+    })
+
+    it('errors with no rows', async () => {
+      await fc.assert(
+        fc.asyncProperty(fc.anything(), async (query) => {
+          const { client, mockQuery } = mkClient()
+          mockQuery.mockResolvedValue({ rows: [] })
+
+          await expect(client.querySingle(query as SqlQuery)).rejects.toThrow()
+        }),
+      )
+    })
+
+    it('errors with multiple rows', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.anything(),
+          fc.array(fc.anything(), 2, 10),
+          async (query, rows) => {
+            const { client, mockQuery } = mkClient()
+            mockQuery.mockResolvedValue({ rows })
+
+            await expect(
+              client.querySingle(query as SqlQuery),
+            ).rejects.toThrow()
           },
         ),
       )
