@@ -51,7 +51,7 @@ describe('DatabaseClient', () => {
   describe('.queryOne()', () => {
     it('queries one row', async () => {
       await fc.assert(
-        fc.asyncProperty(fc.anything(), fc.anything(), async (query, row) => {
+        fc.asyncProperty(fc.anything(), fc.object(), async (query, row) => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [row] })
 
@@ -90,7 +90,7 @@ describe('DatabaseClient', () => {
   describe('.querySingle()', () => {
     it('queries one row', async () => {
       await fc.assert(
-        fc.asyncProperty(fc.anything(), fc.anything(), async (query, row) => {
+        fc.asyncProperty(fc.anything(), fc.object(), async (query, row) => {
           const { client, mockQuery } = mkClient()
           mockQuery.mockResolvedValue({ rows: [row] })
 
